@@ -161,7 +161,9 @@ def blink():
     color1 = data.get('color1', '#FFFFFF')
     color2 = data.get('color2', '#000000')
     interval = data.get('interval', 500)
+    brightness = data.get('brightness', 50)
 
+    desk_strip.set_brightness(brightness)
     restartStrip1Thread(desk_strip.blink,args=(color1,color2, interval))
     return jsonify({'status': 'success'})
 
