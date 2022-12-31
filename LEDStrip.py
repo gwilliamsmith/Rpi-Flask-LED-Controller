@@ -46,15 +46,16 @@ class LEDStrip():
     def cycle_rainbow(self, interval = 10, speed = 20):
         current_thread = threading.current_thread()
         while not current_thread.stopped():
-            for j in range(256 * interval):
-                for i in range(self.strip.numPixels()):
+            while not current_thread.paused():
+                for j in range(256 * interval):
+                    for i in range(self.strip.numPixels()):
+                        if(current_thread.stopped()):
+                            break
+                        self.strip.setPixelColor(i, self.__wheel((int(i * 256 / self.strip.numPixels()) + j) & 255))
+                    self.strip.show()
                     if(current_thread.stopped()):
                         break
-                    self.strip.setPixelColor(i, self.__wheel((int(i * 256 / self.strip.numPixels()) + j) & 255))
-                self.strip.show()
-                if(current_thread.stopped()):
-                    break
-                time.sleep(speed / 1000.0)
+                    time.sleep(speed / 1000.0)
 
     """
     Set a strip to a given pattern.

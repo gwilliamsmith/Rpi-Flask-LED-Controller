@@ -11,7 +11,6 @@ class LightThread(threading.Thread):
         self._stop_event.set()
 
     def stopped(self):
-        #print("Stopped?")
         return self._stop_event.is_set()
 
     def pause(self):
