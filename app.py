@@ -107,14 +107,6 @@ def start_rainbow():
     # Send a response to the client
     return jsonify({'status': 'success'})
 
-@app.route('/clear', methods=['POST'])
-def clear():
-    global desk_strip
-    killStrip1Thread()
-    desk_strip.clear()
-    # Send a response to the client
-    return jsonify({'status': 'success'})
-
 @app.route('/colorwipe', methods=['POST'])
 def color_wipe():
     global desk_strip
@@ -126,7 +118,9 @@ def color_wipe():
     pixels = data['pixels']
     interval = data['interval']
     seamless = data['seamless']
+    brightness = data.get('brightness', 50)
 
+    desk_strip.set_brightness(brightness)
     restartStrip1Thread(desk_strip.color_wipe, args=(bg_color, wipe_color, pixels, interval, seamless))
 
     return jsonify({'status': 'success'})
@@ -204,6 +198,14 @@ def set_brightness():
     brightness = data.get('brightness', 127)
     desk_strip.set_brightness(brightness)
     if thread is not None: thread.resume()
+    return jsonify({'status': 'success'})
+
+@app.route('/clear', methods=['POST'])
+def clear():
+    global desk_strip
+    killStrip1Thread()
+    desk_strip.clear()
+    # Send a response to the client
     return jsonify({'status': 'success'})
 
 """
