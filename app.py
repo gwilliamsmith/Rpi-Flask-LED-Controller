@@ -175,7 +175,7 @@ def resume():
 
 @app.route('/setbrightness', methods=['POST'])
 def set_brightness():
-    thread = getStrip1Thread
+    thread = getStrip1Thread()
     if thread is not None: thread.pause()
     data = request.json
     brightness = data.get('brightness', 127)
