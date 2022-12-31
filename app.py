@@ -4,6 +4,7 @@ import threading
 from LightThread import LightThread
 from LEDStrip import LEDStrip
 import signal
+import jsonschema
 
 app = Flask(__name__)
 CORS(app)
@@ -19,12 +20,11 @@ LED_CHANNEL = 0
 
 Strip1ThreadID = -1
 
-# Strip of lights for under the desk
+# Dict of LEDStrips
 Strips = {}
-Strips['desk_strip'] = LEDStrip("desk_strip", LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
 
-#Strips = []
-#Strips.append('desk_strip', LEDStrip("desk_strip", LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL))
+# Temporary - setup a hard-coded 'desk_strip'
+Strips['desk_strip'] = LEDStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
 
 """
 Helper functions:
@@ -56,6 +56,11 @@ def restartStrip1Thread(function, *args, **kwargs):
     killStrip1Thread()
     return startStrip1Thread(function, *args, **kwargs)
 
+def setup_strip(STRIP_NAME, LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_BRIGHTNESS, LED_INVERT, LED_CHANNEL):
+    global Strips
+    if len(Strips) >= 3:
+        raise ValueError("Max number of strips reached")
+    Strips[STRIP_NAME] = LEDStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_BRIGHTNESS, LED_INVERT, LED_CHANNEL)
 """
 Routes:
 """
@@ -192,6 +197,44 @@ def set_brightness():
     Strips['desk_strip'].set_brightness(brightness)
     if thread is not None: thread.resume()
     return jsonify({'status': 'success'})
+
+@app.route('/addstrip', methods=['POST'])
+def add_strip():
+    add_strip_schema = {
+        "type": "object",
+        "properties": {
+            "STRIP_NAME": {"type": "string"},
+            "LED_COUNT": {"type": "integer"},
+            "LED_PIN": {"type": "integer"},
+            "LED_FREQ_HZ": {"type": "integer"},
+            "LED_DMA": {"type": "integer"},
+            "LED_INVERT": {"type": "boolean"},
+            "LED_BRIGHTNESS": {"type": "integer"},
+            "LED_CHANNEL": {"type": "integer"},
+            "LED_STRIP": {
+                "oneOf": [
+                    {"type": "integer"},
+                    {"type": "null"}
+                ]
+            }
+        },
+    "required": ["STRIP_NAME", "LED_COUNT", "LED_PIN", "LED_FREQ_HZ", "LED_DMA", "LED_INVERT", "LED_BRIGHTNESS", "LED_CHANNEL"]
+    }
+    try:
+        jsonschema.validate(request.json,add_strip_schema)
+        strip_name = request.json["STRIP_NAME"]
+        led_count = request.json["LED_COUNT"]
+        led_pin = request.json["LED_PIN"]
+        led_freq_hz = request.json["LED_FREQ_HZ"]
+        led_dma = request.json["LED_DMA"]
+        led_invert = request.json["LED_INVERT"]
+        led_brightness = request.json["LED_BRIGHTNESS"]
+        led_channel = request.json["LED_CHANNEL"]
+        setup_strip(strip_name, led_count, led_pin, led_freq_hz, led_dma, led_invert, led_brightness, led_channel)
+    except jsonschema.ValidationError as e:
+        return jsonify({"error": e.message}), 400
+    except ValueError as e:
+        return jsonify({"error": e}), 400
 
 """
 Clear the strip when the program ends from ctrl-c or on pi shutdown
