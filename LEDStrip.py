@@ -96,13 +96,15 @@ class LEDStrip():
                         self.set_pixel_color((i+counter)%self.strip.numPixels(), wipe_color)
                     else:
                         self.set_pixel_color((i+counter), wipe_color)
+                    if current_thread.stopped(): 
+                        return
                     # Increment the counter variable
                 counter = (counter + 1) % self.strip.numPixels()
 
                 self.strip.show()
 
                 if current_thread.stopped(): 
-                    break
+                    return
 
                 # Wait for the specified interval
                 time.sleep(interval / 1000.0)
