@@ -21,7 +21,7 @@ Strip1ThreadID = -1
 
 # Strip of lights for under the desk
 Strips = []
-Strips.append({'desk_strip', LEDStrip("desk_strip", LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)})
+Strips.append({'desk_strip': LEDStrip("desk_strip", LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)})
 
 #Strips = []
 #Strips.append('desk_strip', LEDStrip("desk_strip", LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL))
