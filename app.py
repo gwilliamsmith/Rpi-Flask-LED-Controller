@@ -142,13 +142,13 @@ def fade_pattern():
 
 @app.route('/blink',methods=['POST'])
 def blink():
+    global strip1
     data = request.json
     color1 = data.get('color1', '#FFFFFF')
     color2 = data.get('color2', '#000000')
     interval = data.get('interval', 500)
 
-    strip = LEDStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
-    restartStrip1Thread(strip.blink,args=(color1,color2, interval))
+    restartStrip1Thread(strip1.blink,args=(color1,color2, interval))
     return jsonify({'status': 'success'})
 
 @app.route('/pause',methods=['POST'])
