@@ -20,7 +20,7 @@ LED_CHANNEL = 0
 Strip1ThreadID = -1
 
 # Strip of lights for under the desk
-Strips = []
+Strips = {}
 Strips["desk_name"] = LEDStrip("desk_strip", LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
 
 #Strips = []
