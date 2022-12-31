@@ -36,6 +36,7 @@ def killStrip1Thread():
         desk_strip.thread.pause()
         desk_strip.thread.stop()
         desk_strip.thread.join()
+        desk_strip.thread = None
         desk_strip.threadID=-1
 
 def startStrip1Thread(function, *args, **kwargs):
