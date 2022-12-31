@@ -3,6 +3,7 @@ from flask_cors import CORS
 import threading
 from LightThread import LightThread
 from LEDStrip import LEDStrip
+import signal
 
 app = Flask(__name__)
 CORS(app)
@@ -190,6 +191,22 @@ def set_brightness():
     desk_strip.set_brightness(brightness)
     if thread is not None: thread.resume()
     return jsonify({'status': 'success'})
+
+def signal_handler(signal, frame):
+    global desk_strip
+    """Clean up resources and exit the app when `SIGHUP` is received."""
+    try:
+        # Clean up resources here
+        desk_strip.shutdown()
+    except Exception as e:
+        # Log the error
+        print(f'Error while cleaning up resources: {e}')
+    finally:
+        # Exit the app
+        exit(0)
+
+signal.signal(signal.SIGHUP,signal_handler)
+signal.signal(signal.SIGINT, signal_handler)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')

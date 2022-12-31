@@ -186,3 +186,7 @@ class LEDStrip():
                     strip.show()
                     time.sleep(interval / 1000.0)
             if current_thread.stopped(): return
+
+    def shutdown(self):
+        self.clear()
+        self.strip.deinit()
