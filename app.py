@@ -184,6 +184,7 @@ def set_brightness():
     brightness = data.get('brightness', 127)
     strip1.set_brightness(brightness)
     if thread is not None: thread.resume()
+    return jsonify({'status': 'success'})
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
