@@ -20,34 +20,30 @@ LED_CHANNEL = 0
 Strip1ThreadID = -1
 
 # Strip of lights for under the desk
-desk_strip = LEDStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
+desk_strip = LEDStrip("desk_strip", LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
 
 """
 Helper functions:
 """
 
 def getStrip1Thread():
-    global Strip1ThreadID
-    for thread in threading.enumerate():
-        if(thread.ident == Strip1ThreadID):
-            return thread
-    return None
+    global desk_strip
+    return desk_strip.thread
 def killStrip1Thread():
-    global Strip1ThreadID
-    for thread in threading.enumerate():
-        if(thread.ident == Strip1ThreadID):
-            thread.pause()
-            thread.stop()
-            thread.join()
-            Strip1ThreadID = -1
+    global desk_strip
+    if desk_strip.thread is not None:
+        desk_strip.thread.pause()
+        desk_strip.thread.stop()
+        desk_strip.thread.join()
+        desk_strip.threadID=-1
 
 def startStrip1Thread(function, *args, **kwargs):
-    global Strip1ThreadID
-    if(Strip1ThreadID == -1):
-        Strip1Thread = LightThread(name = "Strip1Thread" ,target = function, *args, **kwargs)
-        Strip1Thread.start()
-        Strip1ThreadID = Strip1Thread.ident
-        return Strip1Thread
+    global desk_strip
+    if desk_strip.thread is None:
+        desk_strip.thread = LightThread(name = "Strip1Thread" ,target = function, *args, **kwargs)
+        desk_strip.thread.start()
+        desk_strip.threadID = desk_strip.thread.ident
+        return desk_strip.thread
     else:
         print("Strip1 is already running something!")
 

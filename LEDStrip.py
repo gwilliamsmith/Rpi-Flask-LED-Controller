@@ -4,7 +4,11 @@ import time
 from LightThread import LightThread
 
 class LEDStrip():
-    def __init__(self, LED_COUNT=60, LED_PIN=18, LED_FREQ_HZ=800000, LED_DMA=10, LED_INVERT=False, LED_BRIGHTNESS=255, LED_CHANNEL=0):
+    def __init__(self, name, LED_COUNT=60, LED_PIN=18, LED_FREQ_HZ=800000, LED_DMA=10, LED_INVERT=False, LED_BRIGHTNESS=255, LED_CHANNEL=0):
+        self.name = name
+        self.threadID = -1
+        self.thread = None
+        
         self.num_leds = LED_COUNT
         self.brightness = LED_BRIGHTNESS
         self.channel = LED_CHANNEL
