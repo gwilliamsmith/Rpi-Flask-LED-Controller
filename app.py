@@ -192,12 +192,15 @@ def set_brightness():
     if thread is not None: thread.resume()
     return jsonify({'status': 'success'})
 
-def signal_handler(signal, frame):
+"""
+Clear the strip when the program ends from ctrl-c or on pi shutdown
+"""
+def end_signal_handler(signal, frame):
     global desk_strip
     """Clean up resources and exit the app when `SIGHUP` is received."""
     try:
         # Clean up resources here
-        desk_strip.shutdown()
+        desk_strip.clear()
     except Exception as e:
         # Log the error
         print(f'Error while cleaning up resources: {e}')
@@ -205,8 +208,8 @@ def signal_handler(signal, frame):
         # Exit the app
         exit(0)
 
-signal.signal(signal.SIGHUP,signal_handler)
-signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGHUP,end_signal_handler)
+signal.signal(signal.SIGINT, end_signal_handler)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
