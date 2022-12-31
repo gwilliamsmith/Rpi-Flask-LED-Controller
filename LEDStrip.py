@@ -141,7 +141,7 @@ class LEDStrip():
     """
     Sets the brightness for the strip, but does not affect the colors
     """
-    def brightness(self,brightness):
+    def set_brightness(self,brightness):
         self.strip.setBrightness(brightness)
         self.strip.show()
 
