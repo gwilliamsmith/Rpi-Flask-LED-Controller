@@ -8,7 +8,6 @@ class LightThread(threading.Thread):
         self._pause_event = threading.Event()
 
     def stop(self): 
-        print("Stopping!")
         self._stop_event.set()
 
     def stopped(self):

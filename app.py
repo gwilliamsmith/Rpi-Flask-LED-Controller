@@ -32,7 +32,6 @@ def getStrip1Thread():
 def killStrip1Thread():
     global desk_strip
     if desk_strip.thread is not None:
-        print("Killing")
         desk_strip.thread.pause()
         desk_strip.thread.stop()
         desk_strip.thread.join()
@@ -44,7 +43,6 @@ def startStrip1Thread(function, *args, **kwargs):
     if desk_strip.thread is None:
         desk_strip.thread = LightThread(name = "Strip1Thread" ,target = function, *args, **kwargs)
         desk_strip.thread.start()
-        print(desk_strip.thread.ident)
         desk_strip.threadID = desk_strip.thread.ident
         return desk_strip.thread
     else:

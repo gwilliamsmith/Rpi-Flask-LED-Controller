@@ -85,7 +85,6 @@ class LEDStrip():
         pixels = min(pixels, self.strip.numPixels())
 
         counter = 0
-        print(seamless)
         
         # Loop indefinitely
 
