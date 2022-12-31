@@ -79,8 +79,11 @@ def set_pattern():
     killStrip1Thread()
 
     # Read the color pattern from the request body
-    pattern = request.json['pattern']
+    data = request.json
+    pattern = data['pattern']
+    brightness = data.get('brightness', 50)
 
+    desk_strip.set_brightness(brightness)
     desk_strip.set_pattern(pattern)
 
     # Send a response to the client
