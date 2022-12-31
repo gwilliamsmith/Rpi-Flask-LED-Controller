@@ -211,6 +211,4 @@ def end_signal_handler(signal, frame):
 signal.signal(signal.SIGHUP,end_signal_handler)
 signal.signal(signal.SIGINT, end_signal_handler)
 
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0')
 
