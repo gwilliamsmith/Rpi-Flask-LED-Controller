@@ -138,6 +138,12 @@ class LEDStrip():
                 if current_thread.stopped(): return
                 time.sleep(interval/1000.0) 
 
+    """
+    Sets the brightness for the strip, but does not affect the colors
+    """
+    def brightness(self,brightness):
+        self.strip.setBrightness(brightness)
+        self.strip.show()
 
     """
     Translates a color from a given hexcode color (#FFFFFF) to a rpi_ws281x color that can be used to set a pixel
