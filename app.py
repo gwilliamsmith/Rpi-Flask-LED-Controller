@@ -235,6 +235,7 @@ def add_strip():
         return jsonify({"error": e.message}), 400
     except ValueError as e:
         return jsonify({"error": e}), 400
+    return jsonify({'status': 'success'}), 201
 
 """
 Clear the strip when the program ends from ctrl-c or on pi shutdown
