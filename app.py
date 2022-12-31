@@ -92,6 +92,7 @@ def set_pattern():
 @app.route('/startrainbow', methods=['POST'])
 def start_rainbow():
     global desk_strip
+    killStrip1Thread()
     # Start the rainbow cycle in a new thread
     if not request.data:
         restartStrip1Thread(desk_strip.cycle_rainbow)
@@ -99,6 +100,9 @@ def start_rainbow():
         data = request.json
         interval = data.get('interval',10)
         speed = data.get('speed',20)
+        brightness = data.get('brightness', 50)
+
+        desk_strip.set_brightness(brightness)
         restartStrip1Thread(desk_strip.cycle_rainbow, args=(interval,speed))
     # Send a response to the client
     return jsonify({'status': 'success'})
@@ -114,6 +118,7 @@ def clear():
 @app.route('/colorwipe', methods=['POST'])
 def color_wipe():
     global desk_strip
+    killStrip1Thread()
 
     data = request.json
     bg_color = data['bg_color']
@@ -130,6 +135,7 @@ def color_wipe():
 @app.route('/fadecolor', methods=['POST'])
 def fade_color():
     global desk_strip
+    killStrip1Thread()
     # Read the color, minimum brightness, maximum brightness, and interval from the request body, if present
     data = request.json
     color = data.get('color', '#FFFFFF')
@@ -142,6 +148,7 @@ def fade_color():
 @app.route('/fadepattern',methods=['POST'])
 def fade_pattern():
     global desk_strip
+    killStrip1Thread()
     #Read the pattern, minimum brightness, maximum brightness, and interval from the request body, if present
     data = request.json
     pattern = data['pattern']
@@ -155,6 +162,7 @@ def fade_pattern():
 @app.route('/blink',methods=['POST'])
 def blink():
     global desk_strip
+    killStrip1Thread()
     data = request.json
     color1 = data.get('color1', '#FFFFFF')
     color2 = data.get('color2', '#000000')
