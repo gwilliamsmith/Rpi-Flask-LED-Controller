@@ -163,18 +163,18 @@ class LEDStrip():
 
         # Loop indefinitely
         while not current_thread.stopped():
-            # Fade in the LEDs
-            for i in range(min_brightness, max_brightness + 1):
-                if(current_thread.stopped()):
-                        return
-                strip.setBrightness(i)
-                strip.show()
-                time.sleep(interval / 1000.0)
+            while not current_thread.paused():
+                # Fade in the LEDs
+                for i in range(min_brightness, max_brightness + 1):
+                    if current_thread.stopped(): return
+                    strip.setBrightness(i)
+                    strip.show()
+                    time.sleep(interval / 1000.0)
 
-            # Fade out the LEDs
-            for i in range(max_brightness, min_brightness - 1, -1):
-                if(current_thread.stopped()):
-                        return
-                strip.setBrightness(i)
-                strip.show()
-                time.sleep(interval / 1000.0)
+                # Fade out the LEDs
+                for i in range(max_brightness, min_brightness - 1, -1):
+                    if current_thread.stopped(): return
+                    strip.setBrightness(i)
+                    strip.show()
+                    time.sleep(interval / 1000.0)
+            if current_thread.stopped(): return
