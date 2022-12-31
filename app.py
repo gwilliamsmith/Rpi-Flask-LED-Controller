@@ -64,7 +64,10 @@ def set_color():
     global desk_strip
     killStrip1Thread()
     # Read the color from the request body
-    color = request.json['color']
+    data = request.json
+    color = data['color']
+    brightness = data.get('brightness', 50)
+    desk_strip.set_brightness(brightness)
     desk_strip.set_all_pixels(color)
 
     # Send a response to the client
