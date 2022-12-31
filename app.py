@@ -24,7 +24,7 @@ Strip1ThreadID = -1
 Strips = {}
 
 # Temporary - setup a hard-coded 'desk_strip'
-Strips['desk_strip'] = LEDStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
+#Strips['desk_strip'] = LEDStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
 
 """
 Helper functions:
