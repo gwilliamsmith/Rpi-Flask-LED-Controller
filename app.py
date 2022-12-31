@@ -18,6 +18,8 @@ LED_CHANNEL = 0
 
 Strip1ThreadID = -1
 
+strip1 = LEDStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
+
 """
 Helper functions:
 """
@@ -175,12 +177,12 @@ def resume():
 
 @app.route('/setbrightness', methods=['POST'])
 def set_brightness():
+    global strip1
     thread = getStrip1Thread()
     if thread is not None: thread.pause()
     data = request.json
     brightness = data.get('brightness', 127)
-    strip = LEDStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
-    strip.set_brightness(brightness)
+    strip1.set_brightness(brightness)
     if thread is not None: thread.resume()
 
 if __name__ == '__main__':
