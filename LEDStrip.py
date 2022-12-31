@@ -128,13 +128,15 @@ class LEDStrip():
         colorFlip = False
 
         while not current_thread.stopped():
-            if colorFlip:
-                self.set_all_pixels(color2)
-                colorFlip = False
-            else:
-                self.set_all_pixels(color1)
-                colorFlip = True
-            time.sleep(interval/1000.0) 
+            while not current_thread.paused():
+                if colorFlip:
+                    self.set_all_pixels(color2)
+                    colorFlip = False
+                else:
+                    self.set_all_pixels(color1)
+                    colorFlip = True
+                if current_thread.stopped(): return
+                time.sleep(interval/1000.0) 
 
 
     """
