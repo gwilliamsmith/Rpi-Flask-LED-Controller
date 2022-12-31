@@ -43,6 +43,7 @@ def startStrip1Thread(function, *args, **kwargs):
     if desk_strip.thread is None:
         desk_strip.thread = LightThread(name = "Strip1Thread" ,target = function, *args, **kwargs)
         desk_strip.thread.start()
+        print(desk_strip.thread)
         desk_strip.threadID = desk_strip.thread.ident
         return desk_strip.thread
     else:
