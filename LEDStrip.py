@@ -50,11 +50,11 @@ class LEDStrip():
                 for j in range(256 * interval):
                     for i in range(self.strip.numPixels()):
                         if(current_thread.stopped()):
-                            break
+                            return
                         self.strip.setPixelColor(i, self.__wheel((int(i * 256 / self.strip.numPixels()) + j) & 255))
                     self.strip.show()
                     if(current_thread.stopped()):
-                        break
+                        return
                     time.sleep(speed / 1000.0)
 
     """
