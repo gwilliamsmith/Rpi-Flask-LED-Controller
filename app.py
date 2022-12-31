@@ -59,49 +59,54 @@ Routes:
 
 @app.route('/setcolor', methods=['POST'])
 def set_color():
+    global strip1
     killStrip1Thread()
     # Read the color from the request body
     color = request.json['color']
-    LEDStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL).set_all_pixels(color)
+    strip1.set_all_pixels(color)
 
     # Send a response to the client
     return jsonify({'status': 'success'})
 
 @app.route('/setpattern', methods=['POST'])
 def set_pattern():
+    global strip1
     killStrip1Thread()
 
     # Read the color pattern from the request body
     pattern = request.json['pattern']
 
-    LEDStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL).set_pattern(pattern)
+    strip1.set_pattern(pattern)
 
     # Send a response to the client
     return jsonify({'status': 'success'})
 
 @app.route('/startrainbow', methods=['POST'])
 def start_rainbow():
-    strip = LEDStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
+    global strip1
     # Start the rainbow cycle in a new thread
     if not request.data:
-        restartStrip1Thread(strip.cycle_rainbow)
+        restartStrip1Thread(strip1.cycle_rainbow)
     else:
         data = request.json
         interval = data.get('interval',10)
         speed = data.get('speed',20)
-        restartStrip1Thread(strip.cycle_rainbow, args=(interval,speed))
+        restartStrip1Thread(strip1.cycle_rainbow, args=(interval,speed))
     # Send a response to the client
     return jsonify({'status': 'success'})
 
 @app.route('/clear', methods=['POST'])
 def clear():
+    global strip1
     killStrip1Thread()
-    LEDStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL).clear()
+    strip1.clear()
     # Send a response to the client
     return jsonify({'status': 'success'})
 
 @app.route('/colorwipe', methods=['POST'])
 def color_wipe():
+    global strip1
+
     data = request.json
     bg_color = data['bg_color']
     wipe_color = data['wipe_color']
@@ -109,26 +114,26 @@ def color_wipe():
     interval = data['interval']
     seamless = data['seamless']
 
-    strip = LEDStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
-    restartStrip1Thread(strip.color_wipe, args=(bg_color, wipe_color, pixels, interval, seamless))
+    restartStrip1Thread(strip1.color_wipe, args=(bg_color, wipe_color, pixels, interval, seamless))
 
     return jsonify({'status': 'success'})
 
 # Define the '/fadecolor' endpoint
 @app.route('/fadecolor', methods=['POST'])
 def fade_color():
+    global strip1
     # Read the color, minimum brightness, maximum brightness, and interval from the request body, if present
     data = request.json
     color = data.get('color', '#FFFFFF')
     min_brightness = data.get('min_brightness', 0)
     max_brightness = data.get('max_brightness', 255)
     interval = data.get('interval', 500)
-    strip = LEDStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
-    restartStrip1Thread(strip.fade,args=(color,min_brightness,max_brightness,interval))
+    restartStrip1Thread(strip1.fade,args=(color,min_brightness,max_brightness,interval))
     return jsonify({'status': 'success'})
 
 @app.route('/fadepattern',methods=['POST'])
 def fade_pattern():
+    global strip1
     #Read the pattern, minimum brightness, maximum brightness, and interval from the request body, if present
     data = request.json
     pattern = data['pattern']
@@ -136,8 +141,7 @@ def fade_pattern():
     max_brightness = data.get('max_brightness', 255)
     interval = data.get('interval', 500)
 
-    strip = LEDStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
-    restartStrip1Thread(strip.fadePattern, args=(pattern,min_brightness,max_brightness,interval))
+    restartStrip1Thread(strip1.fadePattern, args=(pattern,min_brightness,max_brightness,interval))
     return jsonify({'status': 'success'})
 
 @app.route('/blink',methods=['POST'])
