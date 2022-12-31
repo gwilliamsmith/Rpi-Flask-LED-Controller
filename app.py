@@ -32,6 +32,7 @@ def getStrip1Thread():
 def killStrip1Thread():
     global desk_strip
     if desk_strip.thread is not None:
+        print("Killing")
         desk_strip.thread.pause()
         desk_strip.thread.stop()
         desk_strip.thread.join()
