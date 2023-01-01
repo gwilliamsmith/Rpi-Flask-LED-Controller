@@ -4,6 +4,7 @@ import threading
 from LightThread import LightThread
 from LEDStrip import LEDStrip
 import signal
+import jsonschema
 
 app = Flask(__name__)
 CORS(app)
@@ -19,98 +20,95 @@ LED_CHANNEL = 0
 
 Strip1ThreadID = -1
 
-# Strip of lights for under the desk
-desk_strip = LEDStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
+# Dict of LEDStrips
+Strips = {}
+
+#Strips['desk_strip'] = LEDStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
 
 """
 Helper functions:
 """
 
-def getStrip1Thread():
-    global Strip1ThreadID
-    for thread in threading.enumerate():
-        if(thread.ident == Strip1ThreadID):
-            return thread
-    return None
-def killStrip1Thread():
-    global Strip1ThreadID
-    for thread in threading.enumerate():
-        if(thread.ident == Strip1ThreadID):
-            thread.pause()
-            thread.stop()
-            thread.join()
-            Strip1ThreadID = -1
+def setup_strip(STRIP_NAME, LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_BRIGHTNESS, LED_INVERT, LED_CHANNEL):
+    global Strips
+    if len(Strips) >= 3:
+        raise ValueError("Max number of strips reached")
+    Strips[STRIP_NAME] = LEDStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_BRIGHTNESS, LED_INVERT, LED_CHANNEL)
 
-def startStrip1Thread(function, *args, **kwargs):
-    global Strip1ThreadID
-    if(Strip1ThreadID == -1):
-        Strip1Thread = LightThread(name = "Strip1Thread" ,target = function, *args, **kwargs)
-        Strip1Thread.start()
-        Strip1ThreadID = Strip1Thread.ident
-        return Strip1Thread
-    else:
-        print("Strip1 is already running something!")
-
-def restartStrip1Thread(function, *args, **kwargs):
-    killStrip1Thread()
-    return startStrip1Thread(function, *args, **kwargs)
-
+def get_strip(strip_name):
+    global Strips
+    return Strips[strip_name]
 """
 Routes:
 """
 
 @app.route('/setcolor', methods=['POST'])
 def set_color():
-    global desk_strip
-    killStrip1Thread()
+    try:
+        target_strip = get_strip(request.json['strip_name'])
+    except KeyError:
+        return jsonify({'error': 'No strip specified'}), 400
+    target_strip.stop_thread()
     # Read the color from the request body
-    data = request.json
-    color = data['color']
-    brightness = data.get('brightness', 50)
-    desk_strip.set_brightness(brightness)
-    desk_strip.set_all_pixels(color)
+
+    color = request.json['color']
+    target_strip.set_all_pixels(color)
 
     # Send a response to the client
     return jsonify({'status': 'success'})
 
 @app.route('/setpattern', methods=['POST'])
 def set_pattern():
-    global desk_strip
-    killStrip1Thread()
+    try:
+        target_strip = get_strip(request.json['strip_name'])
+    except KeyError:
+        return jsonify({'error': 'No strip specified'}), 400
+    target_strip.stop_thread()
 
     # Read the color pattern from the request body
     data = request.json
     pattern = data['pattern']
     brightness = data.get('brightness', 50)
 
-    desk_strip.set_brightness(brightness)
-    desk_strip.set_pattern(pattern)
+    target_strip.set_pattern(pattern)
 
     # Send a response to the client
     return jsonify({'status': 'success'})
 
 @app.route('/startrainbow', methods=['POST'])
 def start_rainbow():
-    global desk_strip
-    killStrip1Thread()
+    try:
+        target_strip = get_strip(request.json['strip_name'])
+    except KeyError:
+        return jsonify({'error': 'No strip specified'}), 400
     # Start the rainbow cycle in a new thread
     if not request.data:
-        restartStrip1Thread(desk_strip.cycle_rainbow)
+        target_strip.restart_thread(target_strip.cycle_rainbow)
     else:
         data = request.json
         interval = data.get('interval',10)
         speed = data.get('speed',20)
-        brightness = data.get('brightness', 50)
+        target_strip.restart_thread(target_strip.cycle_rainbow, args=(interval,speed))
+    # Send a response to the client
+    return jsonify({'status': 'success'})
 
-        desk_strip.set_brightness(brightness)
-        restartStrip1Thread(desk_strip.cycle_rainbow, args=(interval,speed))
+@app.route('/clear', methods=['POST'])
+def clear():
+    try:
+        target_strip = get_strip(request.json['strip_name'])
+    except KeyError:
+        return jsonify({'error': 'No strip specified'}), 400
+    target_strip.stop_thread()
+    target_strip.clear()
     # Send a response to the client
     return jsonify({'status': 'success'})
 
 @app.route('/colorwipe', methods=['POST'])
 def color_wipe():
-    global desk_strip
-    killStrip1Thread()
+    try:
+        target_strip = get_strip(request.json['strip_name'])
+    except KeyError:
+        return jsonify({'error': 'No strip specified'}), 400
 
     data = request.json
     bg_color = data['bg_color']
@@ -120,29 +118,32 @@ def color_wipe():
     seamless = data['seamless']
     brightness = data.get('brightness', 50)
 
-    desk_strip.set_brightness(brightness)
-    restartStrip1Thread(desk_strip.color_wipe, args=(bg_color, wipe_color, pixels, interval, seamless))
+    target_strip.restart_thread(target_strip.color_wipe, args=(bg_color, wipe_color, pixels, interval, seamless))
 
     return jsonify({'status': 'success'})
 
 # Define the '/fadecolor' endpoint
 @app.route('/fadecolor', methods=['POST'])
 def fade_color():
-    global desk_strip
-    killStrip1Thread()
+    try:
+        target_strip = get_strip(request.json['strip_name'])
+    except KeyError:
+        return jsonify({'error': 'No strip specified'}), 400
     # Read the color, minimum brightness, maximum brightness, and interval from the request body, if present
     data = request.json
     color = data.get('color', '#FFFFFF')
     min_brightness = data.get('min_brightness', 0)
     max_brightness = data.get('max_brightness', 255)
     interval = data.get('interval', 500)
-    restartStrip1Thread(desk_strip.fade,args=(color,min_brightness,max_brightness,interval))
+    target_strip.restart_thread(target_strip.fade,args=(color,min_brightness,max_brightness,interval))
     return jsonify({'status': 'success'})
 
 @app.route('/fadepattern',methods=['POST'])
 def fade_pattern():
-    global desk_strip
-    killStrip1Thread()
+    try:
+        target_strip = get_strip(request.json['strip_name'])
+    except KeyError:
+        return jsonify({'error': 'No strip specified'}), 400
     #Read the pattern, minimum brightness, maximum brightness, and interval from the request body, if present
     data = request.json
     pattern = data['pattern']
@@ -150,26 +151,31 @@ def fade_pattern():
     max_brightness = data.get('max_brightness', 255)
     interval = data.get('interval', 500)
 
-    restartStrip1Thread(desk_strip.fadePattern, args=(pattern,min_brightness,max_brightness,interval))
+    target_strip.restart_thread(target_strip.fadePattern, args=(pattern,min_brightness,max_brightness,interval))
     return jsonify({'status': 'success'})
 
 @app.route('/blink',methods=['POST'])
 def blink():
-    global desk_strip
-    killStrip1Thread()
+    try:
+        target_strip = get_strip(request.json['strip_name'])
+    except KeyError:
+        return jsonify({'error': 'No strip specified'}), 400
     data = request.json
     color1 = data.get('color1', '#FFFFFF')
     color2 = data.get('color2', '#000000')
     interval = data.get('interval', 500)
     brightness = data.get('brightness', 50)
 
-    desk_strip.set_brightness(brightness)
-    restartStrip1Thread(desk_strip.blink,args=(color1,color2, interval))
+    target_strip.restart_thread(target_strip.blink,args=(color1,color2, interval))
     return jsonify({'status': 'success'})
 
 @app.route('/pause',methods=['POST'])
 def pause():
-    thread = getStrip1Thread()
+    try:
+        target_strip = get_strip(request.json['strip_name'])
+    except KeyError:
+        return jsonify({'error': 'No strip specified'}), 400
+    thread = target_strip.get_thread()
     if thread is not None:
         if not thread.paused():
             thread.pause()
@@ -181,7 +187,11 @@ def pause():
 
 @app.route('/resume',methods=['POST'])
 def resume():
-    thread = getStrip1Thread()
+    try:
+        target_strip = get_strip(request.json['strip_name'])
+    except KeyError:
+        return jsonify({'error': 'No strip specified'}), 400
+    thread = target_strip.get_thread()
     if thread is not None:
         if thread.paused():
             thread.resume()
@@ -193,32 +203,67 @@ def resume():
 
 @app.route('/setbrightness', methods=['POST'])
 def set_brightness():
-    global desk_strip
-    thread = getStrip1Thread()
+    try:
+        target_strip = get_strip(request.json['strip_name'])
+    except KeyError:
+        return jsonify({'error': 'No strip specified'}), 400
+    thread = target_strip.get_thread()
     if thread is not None: thread.pause()
     data = request.json
     brightness = data.get('brightness', 127)
-    desk_strip.set_brightness(brightness)
+    target_strip.set_brightness(brightness)
     if thread is not None: thread.resume()
     return jsonify({'status': 'success'})
 
-@app.route('/clear', methods=['POST'])
-def clear():
-    global desk_strip
-    killStrip1Thread()
-    desk_strip.clear()
-    # Send a response to the client
-    return jsonify({'status': 'success'})
+@app.route('/addstrip', methods=['POST'])
+def add_strip():
+    add_strip_schema = {
+        "type": "object",
+        "properties": {
+            "STRIP_NAME": {"type": "string"},
+            "LED_COUNT": {"type": "integer"},
+            "LED_PIN": {"type": "integer"},
+            "LED_FREQ_HZ": {"type": "integer"},
+            "LED_DMA": {"type": "integer"},
+            "LED_INVERT": {"type": "boolean"},
+            "LED_BRIGHTNESS": {"type": "integer"},
+            "LED_CHANNEL": {"type": "integer"},
+            "LED_STRIP": {
+                "oneOf": [
+                    {"type": "integer"},
+                    {"type": "null"}
+                ]
+            }
+        },
+    "required": ["STRIP_NAME", "LED_COUNT", "LED_PIN", "LED_FREQ_HZ", "LED_DMA", "LED_INVERT", "LED_BRIGHTNESS", "LED_CHANNEL"]
+    }
+    try:
+        jsonschema.validate(request.json,add_strip_schema)
+        strip_name = request.json["STRIP_NAME"]
+        led_count = request.json["LED_COUNT"]
+        led_pin = request.json["LED_PIN"]
+        led_freq_hz = request.json["LED_FREQ_HZ"]
+        led_dma = request.json["LED_DMA"]
+        led_invert = request.json["LED_INVERT"]
+        led_brightness = request.json["LED_BRIGHTNESS"]
+        led_channel = request.json["LED_CHANNEL"]
+        setup_strip(strip_name, led_count, led_pin, led_freq_hz, led_dma, led_invert, led_brightness, led_channel)
+    except jsonschema.ValidationError as e:
+        return jsonify({"error": e.message}), 400
+    except ValueError as e:
+        return jsonify({"error": e}), 400
+    return jsonify({'status': 'success'}), 201
 
 """
 Clear the strip when the program ends from ctrl-c or on pi shutdown
 """
 def end_signal_handler(signal, frame):
-    global desk_strip
+    global Strips
     """Clean up resources and exit the app when `SIGHUP` is received."""
     try:
         # Clean up resources here
-        desk_strip.clear()
+            for strip in Strips:
+                strip.clear()
     except Exception as e:
         # Log the error
         print(f'Error while cleaning up resources: {e}')
