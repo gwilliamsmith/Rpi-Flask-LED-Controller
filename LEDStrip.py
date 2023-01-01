@@ -148,6 +148,32 @@ class LEDStrip():
         self.strip.show()
 
     """
+    Thread handling methods
+    """
+    def stop_thread(self):
+        if self.thread is not None:
+            self.thread.pause()
+            self.thread.stop()
+            self.thread.join()
+            self.thread = None
+            self.threadID = -1
+
+    def start_thread(self, function, *args, **kwargs):
+        if self.thread is None:
+            self.thread = LightThread(target = function, *args, **kwargs)
+            self.thread.start()
+            self.threadID = self.thread.ident
+            return self.thread
+        else:
+            print("That strip is already running something!")
+
+    def restart_thread(self, function, *args, **kwargs):
+        self.stop_thread()
+        self.start_thread(function, *args, **kwargs)
+
+    def get_thread(self):
+        return self.thread
+    """
     Translates a color from a given hexcode color (#FFFFFF) to a rpi_ws281x color that can be used to set a pixel
     """
     def __translateColor(self, color):
