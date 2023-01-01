@@ -29,9 +29,8 @@ Strips = {}
 Helper functions:
 """
 
-def get_strip_thread():
-    global Strips
-    return Strips['desk_strip'].thread
+def get_strip_thread(target_strip):
+    return target_strip.thread
 
 def stop_strip_thread(target_strip):
     if target_strip.thread is not None:
@@ -117,15 +116,21 @@ def start_rainbow():
 
 @app.route('/clear', methods=['POST'])
 def clear():
-    global Strips
-    stop_strip_thread()
-    Strips['desk_strip'].clear()
+    try:
+        target_strip = get_strip(request.json['strip_name'])
+    except KeyError:
+        return jsonify({'error': 'No strip specified'}), 400
+    stop_strip_thread(target_strip)
+    target_strip.clear()
     # Send a response to the client
     return jsonify({'status': 'success'})
 
 @app.route('/colorwipe', methods=['POST'])
 def color_wipe():
-    global Strips
+    try:
+        target_strip = get_strip(request.json['strip_name'])
+    except KeyError:
+        return jsonify({'error': 'No strip specified'}), 400
 
     data = request.json
     bg_color = data['bg_color']
@@ -134,26 +139,32 @@ def color_wipe():
     interval = data['interval']
     seamless = data['seamless']
 
-    restart_strip_thread(Strips['desk_strip'].color_wipe, args=(bg_color, wipe_color, pixels, interval, seamless))
+    restart_strip_thread(target_strip,target_strip.color_wipe, args=(bg_color, wipe_color, pixels, interval, seamless))
 
     return jsonify({'status': 'success'})
 
 # Define the '/fadecolor' endpoint
 @app.route('/fadecolor', methods=['POST'])
 def fade_color():
-    global Strips
+    try:
+        target_strip = get_strip(request.json['strip_name'])
+    except KeyError:
+        return jsonify({'error': 'No strip specified'}), 400
     # Read the color, minimum brightness, maximum brightness, and interval from the request body, if present
     data = request.json
     color = data.get('color', '#FFFFFF')
     min_brightness = data.get('min_brightness', 0)
     max_brightness = data.get('max_brightness', 255)
     interval = data.get('interval', 500)
-    restart_strip_thread(Strips['desk_strip'].fade,args=(color,min_brightness,max_brightness,interval))
+    restart_strip_thread(target_strip,target_strip.fade,args=(color,min_brightness,max_brightness,interval))
     return jsonify({'status': 'success'})
 
 @app.route('/fadepattern',methods=['POST'])
 def fade_pattern():
-    global Strips
+    try:
+        target_strip = get_strip(request.json['strip_name'])
+    except KeyError:
+        return jsonify({'error': 'No strip specified'}), 400
     #Read the pattern, minimum brightness, maximum brightness, and interval from the request body, if present
     data = request.json
     pattern = data['pattern']
@@ -161,23 +172,30 @@ def fade_pattern():
     max_brightness = data.get('max_brightness', 255)
     interval = data.get('interval', 500)
 
-    restart_strip_thread(Strips['desk_strip'].fadePattern, args=(pattern,min_brightness,max_brightness,interval))
+    restart_strip_thread(target_strip,target_strip.fadePattern, args=(pattern,min_brightness,max_brightness,interval))
     return jsonify({'status': 'success'})
 
 @app.route('/blink',methods=['POST'])
 def blink():
-    global Strips
+    try:
+        target_strip = get_strip(request.json['strip_name'])
+    except KeyError:
+        return jsonify({'error': 'No strip specified'}), 400
     data = request.json
     color1 = data.get('color1', '#FFFFFF')
     color2 = data.get('color2', '#000000')
     interval = data.get('interval', 500)
 
-    restart_strip_thread(Strips['desk_strip'].blink,args=(color1,color2, interval))
+    restart_strip_thread(target_strip, target_strip.blink,args=(color1,color2, interval))
     return jsonify({'status': 'success'})
 
 @app.route('/pause',methods=['POST'])
 def pause():
-    thread = get_strip_thread()
+    try:
+        target_strip = get_strip(request.json['strip_name'])
+    except KeyError:
+        return jsonify({'error': 'No strip specified'}), 400
+    thread = get_strip_thread(target_strip)
     if thread is not None:
         if not thread.paused():
             thread.pause()
@@ -189,7 +207,11 @@ def pause():
 
 @app.route('/resume',methods=['POST'])
 def resume():
-    thread = get_strip_thread()
+    try:
+        target_strip = get_strip(request.json['strip_name'])
+    except KeyError:
+        return jsonify({'error': 'No strip specified'}), 400
+    thread = get_strip_thread(target_strip)
     if thread is not None:
         if thread.paused():
             thread.resume()
@@ -201,12 +223,15 @@ def resume():
 
 @app.route('/setbrightness', methods=['POST'])
 def set_brightness():
-    global Strips
-    thread = get_strip_thread()
+    try:
+        target_strip = get_strip(request.json['strip_name'])
+    except KeyError:
+        return jsonify({'error': 'No strip specified'}), 400
+    thread = get_strip_thread(target_strip)
     if thread is not None: thread.pause()
     data = request.json
     brightness = data.get('brightness', 127)
-    Strips['desk_strip'].set_brightness(brightness)
+    target_strip.set_brightness(brightness)
     if thread is not None: thread.resume()
     return jsonify({'status': 'success'})
 
