@@ -106,12 +106,12 @@ def start_rainbow():
         return jsonify({'error': 'No strip specified'}), 400
     # Start the rainbow cycle in a new thread
     if not request.data:
-        restart_strip_thread(target_strip,LEDStrip.cycle_rainbow)
+        restart_strip_thread(target_strip,target_strip.LEDStrip.cycle_rainbow)
     else:
         data = request.json
         interval = data.get('interval',10)
         speed = data.get('speed',20)
-        restart_strip_thread(target_strip,LEDStrip.cycle_rainbow, args=(interval,speed))
+        restart_strip_thread(target_strip,target_strip.cycle_rainbow, args=(interval,speed))
     # Send a response to the client
     return jsonify({'status': 'success'})
 
