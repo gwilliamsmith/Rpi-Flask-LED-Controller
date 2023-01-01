@@ -34,6 +34,11 @@ def setup_strip(STRIP_NAME, LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_BRIGHT
         raise ValueError("Max number of strips reached")
     Strips[STRIP_NAME] = LEDStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_BRIGHTNESS, LED_INVERT, LED_CHANNEL)
 
+def teardown_strip(strip_name):
+    global Strips
+    target_strip = Strips.pop[strip_name]
+    target_strip.stop_thread()
+
 def get_strip(strip_name):
     global Strips
     return Strips[strip_name]
@@ -231,6 +236,16 @@ def add_strip():
         return jsonify({"error": e.message}), 400
     except ValueError as e:
         return jsonify({"error": e}), 400
+    return jsonify({'status': 'success'}), 201
+
+@app.route('/removestrip',methods=['POST'])
+def remove_strip():
+    try:
+        jsonschema.validate(request.json,rschema.baseSchema)
+        strip_name = request.json["STRIP_NAME"]
+        teardown_strip(strip_name)
+    except jsonschema.ValidationError as e:
+        return jsonify({"error": e.message}), 400
     return jsonify({'status': 'success'}), 201
 
 """

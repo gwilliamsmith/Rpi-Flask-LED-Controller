@@ -13,8 +13,8 @@ add_strip_schema = {
         "STRIP_NAME": {"type": "string"},
         "LED_COUNT": {"type": "integer"},
         'LED_PIN': {
-        'type': 'integer',
-        'enum': [12, 18, 40, 52, 13, 19, 41, 45, 53]}
+            'type': 'integer',
+            'enum': [12, 18, 40, 52, 13, 19, 41, 45, 53]},
         },
         "LED_FREQ_HZ": {"type": "integer"},
         "LED_DMA": {"type": "integer"},
@@ -23,13 +23,6 @@ add_strip_schema = {
             'type': 'number',
             'minimum': 0,
             'maximum': 255
-        },
-        'LED_CHANNEL': {
-            'type': 'integer',
-            'oneOf': [
-                {'enum': [0]},
-                {'enum': [1]}
-            ]
         },
         "if":{
             "properties":{
