@@ -37,6 +37,7 @@ def setup_strip(STRIP_NAME, LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_BRIGHT
 def teardown_strip(strip_name):
     global Strips
     target_strip = Strips.pop[strip_name]
+    target_strip.clear()
     target_strip.stop_thread()
 
 def get_strip(strip_name):
