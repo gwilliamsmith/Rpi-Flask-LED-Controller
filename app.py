@@ -32,6 +32,7 @@ Helper functions:
 def get_strip_thread():
     global Strips
     return Strips['desk_strip'].thread
+
 def stop_strip_thread(target_strip):
     if target_strip.thread is not None:
         target_strip.thread.pause()
@@ -40,19 +41,19 @@ def stop_strip_thread(target_strip):
         target_strip.thread = None
         target_strip.threadID=-1
 
-def start_strip_thread(function, *args, **kwargs):
+def start_strip_thread(function, target_strip, *args, **kwargs):
     global Strips
-    if Strips['desk_strip'].thread is None:
-        Strips['desk_strip'].thread = LightThread(name = "Strip1Thread" ,target = function, *args, **kwargs)
-        Strips['desk_strip'].thread.start()
-        Strips['desk_strip'].threadID = Strips['desk_strip'].thread.ident
-        return Strips['desk_strip'].thread
+    if target_strip.thread is None:
+        target_strip.thread = LightThread(target = function, *args, **kwargs)
+        target_strip.thread.start()
+        target_strip.threadID = target_strip.thread.ident
+        return target_strip.thread
     else:
-        print("Strip1 is already running something!")
+        print("That strip is already running something!")
 
-def restart_strip_thread(function, *args, **kwargs):
-    stop_strip_thread()
-    return start_strip_thread(function, *args, **kwargs)
+def restart_strip_thread(function, target_strip, *args, **kwargs):
+    stop_strip_thread(target_strip)
+    return start_strip_thread(function, target_strip, *args, **kwargs)
 
 def setup_strip(STRIP_NAME, LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_BRIGHTNESS, LED_INVERT, LED_CHANNEL):
     global Strips
@@ -83,13 +84,16 @@ def set_color():
 
 @app.route('/setpattern', methods=['POST'])
 def set_pattern():
-    global Strips
-    stop_strip_thread()
+    try:
+        target_strip = get_strip(request.json['strip_name'])
+    except KeyError:
+        return jsonify({'error': 'No strip specified'}), 400
+    stop_strip_thread(target_strip)
 
     # Read the color pattern from the request body
     pattern = request.json['pattern']
 
-    Strips['desk_strip'].set_pattern(pattern)
+    target_strip.set_pattern(pattern)
 
     # Send a response to the client
     return jsonify({'status': 'success'})
