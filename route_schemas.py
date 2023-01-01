@@ -8,32 +8,45 @@ baseSchema = {
 }
 
 add_strip_schema = {
-        "type": "object",
-        "properties": {
-            "STRIP_NAME": {"type": "string"},
-            "LED_COUNT": {"type": "integer"},
-            'LED_PIN': {
+    "type": "object",
+    "properties": {
+        "STRIP_NAME": {"type": "string"},
+        "LED_COUNT": {"type": "integer"},
+        'LED_PIN': {
+        'type': 'integer',
+        'enum': [12, 18, 40, 52, 13, 19, 41, 45, 53]}
+        },
+        "LED_FREQ_HZ": {"type": "integer"},
+        "LED_DMA": {"type": "integer"},
+        "LED_INVERT": {"type": "boolean"},
+        'LED_BRIGHTNESS': {
+            'type': 'number',
+            'minimum': 0,
+            'maximum': 255
+        },
+        'LED_CHANNEL': {
             'type': 'integer',
             'oneOf': [
-                {'enum': [12, 18, 40, 52]},
-                {'enum': [13, 19, 41, 45, 53]}
-                ]
-            },
-            "LED_FREQ_HZ": {"type": "integer"},
-            "LED_DMA": {"type": "integer"},
-            "LED_INVERT": {"type": "boolean"},
-            'LED_BRIGHTNESS': {
-                'type': 'number',
-                'minimum': 0,
-                'maximum': 255
-            },
-            'LED_CHANNEL': {
-                'type': 'integer',
-                'oneOf': [
-                    {'enum': [0]},
-                    {'enum': [1]}
-                ]
+                {'enum': [0]},
+                {'enum': [1]}
+            ]
+        },
+        "if":{
+            "properties":{
+                "LED_PIN": {"enum":[12, 18, 40, 52]}
             }
         },
-    "required": ["STRIP_NAME", "LED_COUNT", "LED_PIN", "LED_FREQ_HZ", "LED_DMA", "LED_INVERT", "LED_BRIGHTNESS", "LED_CHANNEL"]
+        "then":{
+            "properties":{
+                "LED_CHANNEL": {"enum":[0]}
+            },
+            "required":["LED_CHANNEL"]
+        },
+        "else":{
+            "properties":{
+                "LED_CHANNEL": {"enum":[1]}
+            },
+            "required":["LED_CHANNEL"]
+        },
+        "required": ["STRIP_NAME", "LED_COUNT", "LED_PIN", "LED_FREQ_HZ", "LED_DMA", "LED_INVERT", "LED_BRIGHTNESS", "LED_CHANNEL"]
 }
