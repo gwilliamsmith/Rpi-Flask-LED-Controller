@@ -32,14 +32,13 @@ Helper functions:
 def get_strip_thread():
     global Strips
     return Strips['desk_strip'].thread
-def stop_strip_thread():
-    global Strips
-    if Strips['desk_strip'].thread is not None:
-        Strips['desk_strip'].thread.pause()
-        Strips['desk_strip'].thread.stop()
-        Strips['desk_strip'].thread.join()
-        Strips['desk_strip'].thread = None
-        Strips['desk_strip'].threadID=-1
+def stop_strip_thread(target_strip):
+    if target_strip.thread is not None:
+        target_strip.thread.pause()
+        target_strip.thread.stop()
+        target_strip.thread.join()
+        target_strip.thread = None
+        target_strip.threadID=-1
 
 def start_strip_thread(function, *args, **kwargs):
     global Strips
@@ -60,17 +59,24 @@ def setup_strip(STRIP_NAME, LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_BRIGHT
     if len(Strips) >= 3:
         raise ValueError("Max number of strips reached")
     Strips[STRIP_NAME] = LEDStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_BRIGHTNESS, LED_INVERT, LED_CHANNEL)
+
+def get_strip(strip_name):
+    global Strips
+    return Strips[strip_name]
 """
 Routes:
 """
 
 @app.route('/setcolor', methods=['POST'])
 def set_color():
-    global Strips
-    stop_strip_thread()
+    try:
+        target_strip = get_strip(request.json['strip_name'])
+    except KeyError:
+        return jsonify({'error': 'No strip specified'}), 400
+    stop_strip_thread(target_strip)
     # Read the color from the request body
     color = request.json['color']
-    Strips['desk_strip'].set_all_pixels(color)
+    target_strip.set_all_pixels(color)
 
     # Send a response to the client
     return jsonify({'status': 'success'})
