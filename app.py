@@ -41,7 +41,7 @@ def stop_strip_thread(target_strip):
         target_strip.thread = None
         target_strip.threadID=-1
 
-def start_strip_thread(function, target_strip, *args, **kwargs):
+def start_strip_thread(target_strip, function, *args, **kwargs):
     global Strips
     if target_strip.thread is None:
         target_strip.thread = LightThread(target = function, *args, **kwargs)
@@ -51,9 +51,9 @@ def start_strip_thread(function, target_strip, *args, **kwargs):
     else:
         print("That strip is already running something!")
 
-def restart_strip_thread(function, target_strip, *args, **kwargs):
+def restart_strip_thread(target_strip, function, *args, **kwargs):
     stop_strip_thread(target_strip)
-    return start_strip_thread(function, target_strip, *args, **kwargs)
+    return start_strip_thread(target_strip, function, *args, **kwargs)
 
 def setup_strip(STRIP_NAME, LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_BRIGHTNESS, LED_INVERT, LED_CHANNEL):
     global Strips
