@@ -5,6 +5,7 @@ from LightThread import LightThread
 from LEDStrip import LEDStrip
 import signal
 import jsonschema
+import route_payload_schemas as rps
 
 app = Flask(__name__)
 CORS(app)
@@ -23,17 +24,16 @@ Strip1ThreadID = -1
 # Dict of LEDStrips
 Strips = {}
 
-# Temporary - setup a hard-coded 'desk_strip'
 #Strips['desk_strip'] = LEDStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
 
 """
 Helper functions:
 """
 
-def getStrip1Thread():
+def get_strip_thread():
     global Strips
     return Strips['desk_strip'].thread
-def killStrip1Thread():
+def stop_strip_thread():
     global Strips
     if Strips['desk_strip'].thread is not None:
         Strips['desk_strip'].thread.pause()
@@ -42,7 +42,7 @@ def killStrip1Thread():
         Strips['desk_strip'].thread = None
         Strips['desk_strip'].threadID=-1
 
-def startStrip1Thread(function, *args, **kwargs):
+def start_strip_thread(function, *args, **kwargs):
     global Strips
     if Strips['desk_strip'].thread is None:
         Strips['desk_strip'].thread = LightThread(name = "Strip1Thread" ,target = function, *args, **kwargs)
@@ -52,9 +52,9 @@ def startStrip1Thread(function, *args, **kwargs):
     else:
         print("Strip1 is already running something!")
 
-def restartStrip1Thread(function, *args, **kwargs):
-    killStrip1Thread()
-    return startStrip1Thread(function, *args, **kwargs)
+def retsrt_strip_thread(function, *args, **kwargs):
+    stop_strip_thread()
+    return start_strip_thread(function, *args, **kwargs)
 
 def setup_strip(STRIP_NAME, LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_BRIGHTNESS, LED_INVERT, LED_CHANNEL):
     global Strips
@@ -68,7 +68,7 @@ Routes:
 @app.route('/setcolor', methods=['POST'])
 def set_color():
     global Strips
-    killStrip1Thread()
+    stop_strip_thread()
     # Read the color from the request body
     color = request.json['color']
     Strips['desk_strip'].set_all_pixels(color)
@@ -79,7 +79,7 @@ def set_color():
 @app.route('/setpattern', methods=['POST'])
 def set_pattern():
     global Strips
-    killStrip1Thread()
+    stop_strip_thread()
 
     # Read the color pattern from the request body
     pattern = request.json['pattern']
@@ -94,19 +94,19 @@ def start_rainbow():
     global Strips
     # Start the rainbow cycle in a new thread
     if not request.data:
-        restartStrip1Thread(Strips['desk_strip'].cycle_rainbow)
+        retsrt_strip_thread(Strips['desk_strip'].cycle_rainbow)
     else:
         data = request.json
         interval = data.get('interval',10)
         speed = data.get('speed',20)
-        restartStrip1Thread(Strips['desk_strip'].cycle_rainbow, args=(interval,speed))
+        retsrt_strip_thread(Strips['desk_strip'].cycle_rainbow, args=(interval,speed))
     # Send a response to the client
     return jsonify({'status': 'success'})
 
 @app.route('/clear', methods=['POST'])
 def clear():
     global Strips
-    killStrip1Thread()
+    stop_strip_thread()
     Strips['desk_strip'].clear()
     # Send a response to the client
     return jsonify({'status': 'success'})
@@ -122,7 +122,7 @@ def color_wipe():
     interval = data['interval']
     seamless = data['seamless']
 
-    restartStrip1Thread(Strips['desk_strip'].color_wipe, args=(bg_color, wipe_color, pixels, interval, seamless))
+    retsrt_strip_thread(Strips['desk_strip'].color_wipe, args=(bg_color, wipe_color, pixels, interval, seamless))
 
     return jsonify({'status': 'success'})
 
@@ -136,7 +136,7 @@ def fade_color():
     min_brightness = data.get('min_brightness', 0)
     max_brightness = data.get('max_brightness', 255)
     interval = data.get('interval', 500)
-    restartStrip1Thread(Strips['desk_strip'].fade,args=(color,min_brightness,max_brightness,interval))
+    retsrt_strip_thread(Strips['desk_strip'].fade,args=(color,min_brightness,max_brightness,interval))
     return jsonify({'status': 'success'})
 
 @app.route('/fadepattern',methods=['POST'])
@@ -149,7 +149,7 @@ def fade_pattern():
     max_brightness = data.get('max_brightness', 255)
     interval = data.get('interval', 500)
 
-    restartStrip1Thread(Strips['desk_strip'].fadePattern, args=(pattern,min_brightness,max_brightness,interval))
+    retsrt_strip_thread(Strips['desk_strip'].fadePattern, args=(pattern,min_brightness,max_brightness,interval))
     return jsonify({'status': 'success'})
 
 @app.route('/blink',methods=['POST'])
@@ -160,12 +160,12 @@ def blink():
     color2 = data.get('color2', '#000000')
     interval = data.get('interval', 500)
 
-    restartStrip1Thread(Strips['desk_strip'].blink,args=(color1,color2, interval))
+    retsrt_strip_thread(Strips['desk_strip'].blink,args=(color1,color2, interval))
     return jsonify({'status': 'success'})
 
 @app.route('/pause',methods=['POST'])
 def pause():
-    thread = getStrip1Thread()
+    thread = get_strip_thread()
     if thread is not None:
         if not thread.paused():
             thread.pause()
@@ -177,7 +177,7 @@ def pause():
 
 @app.route('/resume',methods=['POST'])
 def resume():
-    thread = getStrip1Thread()
+    thread = get_strip_thread()
     if thread is not None:
         if thread.paused():
             thread.resume()
@@ -190,7 +190,7 @@ def resume():
 @app.route('/setbrightness', methods=['POST'])
 def set_brightness():
     global Strips
-    thread = getStrip1Thread()
+    thread = get_strip_thread()
     if thread is not None: thread.pause()
     data = request.json
     brightness = data.get('brightness', 127)
@@ -200,28 +200,8 @@ def set_brightness():
 
 @app.route('/addstrip', methods=['POST'])
 def add_strip():
-    add_strip_schema = {
-        "type": "object",
-        "properties": {
-            "STRIP_NAME": {"type": "string"},
-            "LED_COUNT": {"type": "integer"},
-            "LED_PIN": {"type": "integer"},
-            "LED_FREQ_HZ": {"type": "integer"},
-            "LED_DMA": {"type": "integer"},
-            "LED_INVERT": {"type": "boolean"},
-            "LED_BRIGHTNESS": {"type": "integer"},
-            "LED_CHANNEL": {"type": "integer"},
-            "LED_STRIP": {
-                "oneOf": [
-                    {"type": "integer"},
-                    {"type": "null"}
-                ]
-            }
-        },
-    "required": ["STRIP_NAME", "LED_COUNT", "LED_PIN", "LED_FREQ_HZ", "LED_DMA", "LED_INVERT", "LED_BRIGHTNESS", "LED_CHANNEL"]
-    }
     try:
-        jsonschema.validate(request.json,add_strip_schema)
+        jsonschema.validate(request.json,rps.add_strip_schema)
         strip_name = request.json["STRIP_NAME"]
         led_count = request.json["LED_COUNT"]
         led_pin = request.json["LED_PIN"]
