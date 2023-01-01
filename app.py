@@ -243,7 +243,7 @@ def add_strip():
 def remove_strip():
     try:
         jsonschema.validate(request.json,rschema.baseSchema)
-        strip_name = request.json["STRIP_NAME"]
+        strip_name = request.json["target_strip"]
         teardown_strip(strip_name)
     except jsonschema.ValidationError as e:
         return jsonify({"error": e.message}), 400
