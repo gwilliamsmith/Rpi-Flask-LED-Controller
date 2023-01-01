@@ -41,7 +41,6 @@ def stop_strip_thread(target_strip):
         target_strip.threadID=-1
 
 def start_strip_thread(target_strip, function, *args, **kwargs):
-    global Strips
     if target_strip.thread is None:
         target_strip.thread = LightThread(target = function, *args, **kwargs)
         target_strip.thread.start()
@@ -282,7 +281,8 @@ def end_signal_handler(signal, frame):
     """Clean up resources and exit the app when `SIGHUP` is received."""
     try:
         # Clean up resources here
-        Strips['desk_strip'].clear()
+            for strip in Strips:
+                strip.clear()
     except Exception as e:
         # Log the error
         print(f'Error while cleaning up resources: {e}')
