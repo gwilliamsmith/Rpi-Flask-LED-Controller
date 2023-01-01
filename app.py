@@ -263,7 +263,7 @@ def end_signal_handler(signal, frame):
     try:
         # Clean up resources here
             for strip in Strips:
-                strip.clear()
+                Strips[strip].clear()
     except Exception as e:
         # Log the error
         print(f'Error while cleaning up resources: {e}')
