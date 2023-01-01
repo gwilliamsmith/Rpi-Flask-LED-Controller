@@ -5,7 +5,6 @@ from LightThread import LightThread
 from LEDStrip import LEDStrip
 import signal
 import jsonschema
-import route_payload_schemas as rps
 
 app = Flask(__name__)
 CORS(app)
@@ -52,7 +51,7 @@ def start_strip_thread(function, *args, **kwargs):
     else:
         print("Strip1 is already running something!")
 
-def retsrt_strip_thread(function, *args, **kwargs):
+def restart_strip_thread(function, *args, **kwargs):
     stop_strip_thread()
     return start_strip_thread(function, *args, **kwargs)
 
@@ -94,12 +93,12 @@ def start_rainbow():
     global Strips
     # Start the rainbow cycle in a new thread
     if not request.data:
-        retsrt_strip_thread(Strips['desk_strip'].cycle_rainbow)
+        restart_strip_thread(Strips['desk_strip'].cycle_rainbow)
     else:
         data = request.json
         interval = data.get('interval',10)
         speed = data.get('speed',20)
-        retsrt_strip_thread(Strips['desk_strip'].cycle_rainbow, args=(interval,speed))
+        restart_strip_thread(Strips['desk_strip'].cycle_rainbow, args=(interval,speed))
     # Send a response to the client
     return jsonify({'status': 'success'})
 
@@ -122,7 +121,7 @@ def color_wipe():
     interval = data['interval']
     seamless = data['seamless']
 
-    retsrt_strip_thread(Strips['desk_strip'].color_wipe, args=(bg_color, wipe_color, pixels, interval, seamless))
+    restart_strip_thread(Strips['desk_strip'].color_wipe, args=(bg_color, wipe_color, pixels, interval, seamless))
 
     return jsonify({'status': 'success'})
 
@@ -136,7 +135,7 @@ def fade_color():
     min_brightness = data.get('min_brightness', 0)
     max_brightness = data.get('max_brightness', 255)
     interval = data.get('interval', 500)
-    retsrt_strip_thread(Strips['desk_strip'].fade,args=(color,min_brightness,max_brightness,interval))
+    restart_strip_thread(Strips['desk_strip'].fade,args=(color,min_brightness,max_brightness,interval))
     return jsonify({'status': 'success'})
 
 @app.route('/fadepattern',methods=['POST'])
@@ -149,7 +148,7 @@ def fade_pattern():
     max_brightness = data.get('max_brightness', 255)
     interval = data.get('interval', 500)
 
-    retsrt_strip_thread(Strips['desk_strip'].fadePattern, args=(pattern,min_brightness,max_brightness,interval))
+    restart_strip_thread(Strips['desk_strip'].fadePattern, args=(pattern,min_brightness,max_brightness,interval))
     return jsonify({'status': 'success'})
 
 @app.route('/blink',methods=['POST'])
@@ -160,7 +159,7 @@ def blink():
     color2 = data.get('color2', '#000000')
     interval = data.get('interval', 500)
 
-    retsrt_strip_thread(Strips['desk_strip'].blink,args=(color1,color2, interval))
+    restart_strip_thread(Strips['desk_strip'].blink,args=(color1,color2, interval))
     return jsonify({'status': 'success'})
 
 @app.route('/pause',methods=['POST'])
@@ -200,8 +199,28 @@ def set_brightness():
 
 @app.route('/addstrip', methods=['POST'])
 def add_strip():
+    add_strip_schema = {
+        "type": "object",
+        "properties": {
+            "STRIP_NAME": {"type": "string"},
+            "LED_COUNT": {"type": "integer"},
+            "LED_PIN": {"type": "integer"},
+            "LED_FREQ_HZ": {"type": "integer"},
+            "LED_DMA": {"type": "integer"},
+            "LED_INVERT": {"type": "boolean"},
+            "LED_BRIGHTNESS": {"type": "integer"},
+            "LED_CHANNEL": {"type": "integer"},
+            "LED_STRIP": {
+                "oneOf": [
+                    {"type": "integer"},
+                    {"type": "null"}
+                ]
+            }
+        },
+    "required": ["STRIP_NAME", "LED_COUNT", "LED_PIN", "LED_FREQ_HZ", "LED_DMA", "LED_INVERT", "LED_BRIGHTNESS", "LED_CHANNEL"]
+    }
     try:
-        jsonschema.validate(request.json,rps.add_strip_schema)
+        jsonschema.validate(request.json,add_strip_schema)
         strip_name = request.json["STRIP_NAME"]
         led_count = request.json["LED_COUNT"]
         led_pin = request.json["LED_PIN"]
