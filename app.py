@@ -100,15 +100,18 @@ def set_pattern():
 
 @app.route('/startrainbow', methods=['POST'])
 def start_rainbow():
-    global Strips
+    try:
+        target_strip = get_strip(request.json['strip_name'])
+    except KeyError:
+        return jsonify({'error': 'No strip specified'}), 400
     # Start the rainbow cycle in a new thread
     if not request.data:
-        restart_strip_thread(Strips['desk_strip'].cycle_rainbow)
+        restart_strip_thread(target_strip,LEDStrip.cycle_rainbow)
     else:
         data = request.json
         interval = data.get('interval',10)
         speed = data.get('speed',20)
-        restart_strip_thread(Strips['desk_strip'].cycle_rainbow, args=(interval,speed))
+        restart_strip_thread(target_strip,LEDStrip.cycle_rainbow, args=(interval,speed))
     # Send a response to the client
     return jsonify({'status': 'success'})
 
