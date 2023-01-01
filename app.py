@@ -50,6 +50,7 @@ def set_color():
         return jsonify({'error': 'No strip specified'}), 400
     target_strip.stop_thread()
     # Read the color from the request body
+
     color = request.json['color']
     target_strip.set_all_pixels(color)
 
@@ -65,7 +66,9 @@ def set_pattern():
     target_strip.stop_thread()
 
     # Read the color pattern from the request body
-    pattern = request.json['pattern']
+    data = request.json
+    pattern = data['pattern']
+    brightness = data.get('brightness', 50)
 
     target_strip.set_pattern(pattern)
 
@@ -113,6 +116,7 @@ def color_wipe():
     pixels = data['pixels']
     interval = data['interval']
     seamless = data['seamless']
+    brightness = data.get('brightness', 50)
 
     target_strip.restart_thread(target_strip.color_wipe, args=(bg_color, wipe_color, pixels, interval, seamless))
 
@@ -160,6 +164,7 @@ def blink():
     color1 = data.get('color1', '#FFFFFF')
     color2 = data.get('color2', '#000000')
     interval = data.get('interval', 500)
+    brightness = data.get('brightness', 50)
 
     target_strip.restart_thread(target_strip.blink,args=(color1,color2, interval))
     return jsonify({'status': 'success'})
