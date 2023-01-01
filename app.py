@@ -5,6 +5,7 @@ from LightThread import LightThread
 from LEDStrip import LEDStrip
 import signal
 import jsonschema
+import route_schemas as rschema
 
 app = Flask(__name__)
 CORS(app)
@@ -17,8 +18,6 @@ LED_DMA = 10
 LED_BRIGHTNESS = 50
 LED_INVERT = False
 LED_CHANNEL = 0
-
-Strip1ThreadID = -1
 
 # Dict of LEDStrips
 Strips = {}
@@ -217,28 +216,8 @@ def set_brightness():
 
 @app.route('/addstrip', methods=['POST'])
 def add_strip():
-    add_strip_schema = {
-        "type": "object",
-        "properties": {
-            "STRIP_NAME": {"type": "string"},
-            "LED_COUNT": {"type": "integer"},
-            "LED_PIN": {"type": "integer"},
-            "LED_FREQ_HZ": {"type": "integer"},
-            "LED_DMA": {"type": "integer"},
-            "LED_INVERT": {"type": "boolean"},
-            "LED_BRIGHTNESS": {"type": "integer"},
-            "LED_CHANNEL": {"type": "integer"},
-            "LED_STRIP": {
-                "oneOf": [
-                    {"type": "integer"},
-                    {"type": "null"}
-                ]
-            }
-        },
-    "required": ["STRIP_NAME", "LED_COUNT", "LED_PIN", "LED_FREQ_HZ", "LED_DMA", "LED_INVERT", "LED_BRIGHTNESS", "LED_CHANNEL"]
-    }
     try:
-        jsonschema.validate(request.json,add_strip_schema)
+        jsonschema.validate(request.json,rschema.add_strip_schema)
         strip_name = request.json["STRIP_NAME"]
         led_count = request.json["LED_COUNT"]
         led_pin = request.json["LED_PIN"]
