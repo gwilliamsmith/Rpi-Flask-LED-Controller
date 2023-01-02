@@ -398,6 +398,8 @@ def remove_strip():
         teardown_strip(target_strip)
     except jsonschema.ValidationError as e:
         return jsonify({"error": e.message}), 400
+    except KeyError:
+        return jsonify({"error": "That strip doesn't exist!"})
     return jsonify({'status': 'success'}), 201
 
 """
