@@ -399,7 +399,7 @@ def remove_strip():
     except jsonschema.ValidationError as e:
         return jsonify({"error": e.message}), 400
     except KeyError:
-        return jsonify({"error": "That strip doesn't exist!"})
+        return jsonify({"error": "That strip doesn't exist!"}), 400
     return jsonify({'status': 'success'}), 201
 
 """
