@@ -80,6 +80,7 @@ def set_color():
 @app.route('/setpattern', methods=['POST'])
 def set_pattern():
     try:
+        #Validate the request payload
         data = request.json
         jsonschema.validate(data,rschema.base_schema)
         jsonschema.validate(data,rschema.pattern_schema)
@@ -95,7 +96,7 @@ def set_pattern():
     #Stop any animation that's running on the strip
     target_strip.stop_thread()
 
-    # Read from the request body
+    # Read from the request payload
     pattern = data['pattern']
     brightness = data['brightness']
 
@@ -108,22 +109,33 @@ def set_pattern():
     # Send a response to the client
     return jsonify({'status': 'success'}), 201
 
+#Sets the LED strip to wheel through the rainbow
 @app.route('/startrainbow', methods=['POST'])
 def start_rainbow():
     try:
-        target_strip = get_strip(request.json['strip_name'])
-    except KeyError:
-        return jsonify({'error': 'No strip specified'}), 400
-    # Start the rainbow cycle in a new thread
-    if not request.data:
-        target_strip.restart_thread(target_strip.cycle_rainbow)
-    else:
+        #Validate the request payload
         data = request.json
-        interval = data.get('interval',10)
-        speed = data.get('speed',20)
-        target_strip.restart_thread(target_strip.cycle_rainbow, args=(interval,speed))
+        jsonschema.validate(data,rschema.base_schema)
+        jsonschema.validate(data,rschema.start_rainbow_schema)
+        jsonschema.validate(data,rschema.speed_schema)
+        jsonschema.validate(data,rschema.brightness_schema)
+        target_strip = get_strip(data['strip_name'])
+    #Return an error if validation fails
+    except jsonschema.ValidationError as e:
+        return jsonify({"error": e.message}), 400
+    #Return an error if the strip doesn't exist
+    except KeyError:
+        return jsonify({'error': ('Strip ' + data['strip_name'] + " doesn't exist!")  }), 400
+    
+    #Read from the request payload
+    interval = data['interval']
+    speed = data['speed']
+
+    # Start the rainbow cycle in a new thread
+    target_strip.restart_thread(target_strip.cycle_rainbow, args=(interval,speed))
+
     # Send a response to the client
-    return jsonify({'status': 'success'})
+    return jsonify({'status': 'success'}), 201
 
 @app.route('/clear', methods=['POST'])
 def clear():
