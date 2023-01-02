@@ -242,7 +242,7 @@ def add_strip():
 @app.route('/removestrip',methods=['POST'])
 def remove_strip():
     try:
-        jsonschema.validate(request.json,rschema.baseSchema)
+        jsonschema.validate(request.json,rschema.base_schema)
         strip_name = request.json["target_strip"]
         teardown_strip(strip_name)
     except jsonschema.ValidationError as e:
