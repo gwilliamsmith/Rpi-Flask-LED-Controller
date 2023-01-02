@@ -33,7 +33,7 @@ fade_brightness_schema = {
             'maximum':255
         }
     },
-    'required':['min_brightness', 'max_brighness']
+    'required':['min_brightness', 'max_brightness']
 }
 
 speed_schema = {
