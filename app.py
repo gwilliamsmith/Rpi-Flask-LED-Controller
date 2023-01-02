@@ -30,7 +30,7 @@ def setup_strip(STRIP_NAME, LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_BRIGHT
 def teardown_strip(target_strip):
     global Strips
     if target_strip not in Strips:
-        return KeyError
+        raise KeyError
     target_strip = Strips.pop(target_strip)
     target_strip.clear()
     target_strip.stop_thread()
