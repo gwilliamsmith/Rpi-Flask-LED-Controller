@@ -351,15 +351,11 @@ def set_brightness():
     #Get the target strip's thread
     thread = target_strip.get_thread()
     
-    #if thread is not None: thread.pause()
-
     #Read the request payload
     brightness = data['brightness']
 
     #Set the strip brightness
     target_strip.set_brightness(brightness)
-
-    #if thread is not None: thread.resume()
 
     #Send a response to the client
     return jsonify({'status': 'success'}), 201
