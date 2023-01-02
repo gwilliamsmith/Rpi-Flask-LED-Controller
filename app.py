@@ -19,7 +19,12 @@ Helper functions:
 def setup_strip(STRIP_NAME, LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_BRIGHTNESS, LED_INVERT, LED_CHANNEL):
     global Strips
     if len(Strips) >= 3:
-        raise ValueError("Max number of strips reached")
+        raise ValueError
+    if STRIP_NAME in Strips:
+        raise KeyError
+    for strip in Strips:
+        if LED_COUNT == Strips[strip].LED_COUNT:
+            raise IndexError
     Strips[STRIP_NAME] = LEDStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_BRIGHTNESS, LED_INVERT, LED_CHANNEL)
 
 def teardown_strip(strip_name):
@@ -375,8 +380,12 @@ def add_strip():
         setup_strip(strip_name, led_count, led_pin, led_freq_hz, led_dma, led_invert, led_brightness, led_channel)
     except jsonschema.ValidationError as e:
         return jsonify({"error": e.message}), 400
-    except ValueError as e:
-        return jsonify({"error": e}), 400
+    except ValueError:
+        return jsonify({"error": "You cannot add more three LED strips!"}), 400
+    except KeyError:
+        return jsonify({"error": "An LED strip with that name already exists!"}), 400
+    except IndexError:
+        return jsonify({"error":"An LED strip is already using that pin!"}), 400
     return jsonify({'status': 'success'}), 201
 
 @app.route('/removestrip',methods=['POST'])
