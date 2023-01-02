@@ -47,7 +47,7 @@ def get_strip(strip_name):
 """
 Routes:
 """
-
+#Sets the entire LED strip to a given color
 @app.route('/setcolor', methods=['POST'])
 def set_color():
     try:
@@ -76,23 +76,37 @@ def set_color():
     # Send a response to the client
     return jsonify({'status': 'success'}), 201
 
+#Sets the LED strip to a given pattern
 @app.route('/setpattern', methods=['POST'])
 def set_pattern():
     try:
-        target_strip = get_strip(request.json['strip_name'])
+        data = request.json
+        jsonschema.validate(data,rschema.base_schema)
+        jsonschema.validate(data,rschema.pattern_schema)
+        jsonschema.validate(data,rschema.brightness_schema)
+        target_strip = get_strip(data['strip_name'])
+    #Return an error if validation fails
+    except jsonschema.ValidationError as e:
+        return jsonify({"error": e.message}), 400
+    #Return an error if the strip doesn't exist
     except KeyError:
-        return jsonify({'error': 'No strip specified'}), 400
+        return jsonify({'error': ('Strip ' + data['strip_name'] + " doesn't exist!")  }), 400
+    
+    #Stop any animation that's running on the strip
     target_strip.stop_thread()
 
-    # Read the color pattern from the request body
-    data = request.json
+    # Read from the request body
     pattern = data['pattern']
-    brightness = data.get('brightness', 50)
+    brightness = data['brightness']
 
+    #Update LED strip brightness
+    target_strip.set_brightness(brightness)
+
+    #Set the LED strip to the given pattern
     target_strip.set_pattern(pattern)
 
     # Send a response to the client
-    return jsonify({'status': 'success'})
+    return jsonify({'status': 'success'}), 201
 
 @app.route('/startrainbow', methods=['POST'])
 def start_rainbow():
