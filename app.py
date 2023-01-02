@@ -245,16 +245,27 @@ def fade_pattern():
 @app.route('/blink',methods=['POST'])
 def blink():
     try:
-        target_strip = get_strip(request.json['target_strip'])
+        #Validate the request payload
+        data = request.json
+        jsonschema.validate(data,rschema.base_schema)
+        jsonschema.validate(data,rschema.color_array_schema)
+        jsonschema.validate(data,rschema.speed_schema)
+        jsonschema.validate(data,rschema.brightness_schema)
+        target_strip = get_strip(data['target_strip'])
+    #Return an error if validation fails
+    except jsonschema.ValidationError as e:
+        return jsonify({"error": e.message}), 400
+    #Return an error if the strip doesn't exist
     except KeyError:
-        return jsonify({'error': 'No strip specified'}), 400
-    data = request.json
-    color1 = data.get('color1', '#FFFFFF')
-    color2 = data.get('color2', '#000000')
-    speed = data.get('speed', 500)
-    brightness = data.get('brightness', 50)
+        return jsonify({'error': ('Strip ' + data['target_strip'] + " doesn't exist!")  }), 400
 
-    target_strip.restart_thread(target_strip.blink,args=(color1,color2, speed))
+    #Read the request payload
+    colors = data['colors']
+    speed = data['speed']
+    brightness = data['brightness']
+
+    target_strip.set_brightness(brightness)
+    target_strip.restart_thread(target_strip.blink,args=(colors, speed))
     return jsonify({'status': 'success'})
 
 @app.route('/pause',methods=['POST'])

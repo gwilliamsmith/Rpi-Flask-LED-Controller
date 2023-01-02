@@ -124,20 +124,18 @@ class LEDStrip():
     """
     Blink the entire strip between two colors on an interval
     """
-    def blink(self, color1, color2, interval):
+    def blink(self, colors, interval):
         current_thread = threading.current_thread()
 
         colorFlip = False
+        
+        counter = 0
 
         while not current_thread.stopped():
             while not current_thread.paused():
-                if colorFlip:
-                    self.set_all_pixels(color2)
-                    colorFlip = False
-                else:
-                    self.set_all_pixels(color1)
-                    colorFlip = True
+                self.set_all_pixels(colors[counter])
                 if current_thread.stopped(): return
+                counter = (counter + 1) % len(colors)
                 time.sleep(interval/1000.0) 
 
     """
