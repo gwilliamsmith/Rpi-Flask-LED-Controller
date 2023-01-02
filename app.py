@@ -244,6 +244,7 @@ def fade_pattern():
     #Send a response to the client
     return jsonify({'status': 'success'}), 201
 
+#Blink the LED strip between a given array of colors
 @app.route('/blink',methods=['POST'])
 def blink():
     try:
@@ -266,55 +267,102 @@ def blink():
     speed = data['speed']
     brightness = data['brightness']
 
+    #Set the brightness of the LED strip
     target_strip.set_brightness(brightness)
-    target_strip.restart_thread(target_strip.blink,args=(colors, speed))
-    return jsonify({'status': 'success'})
 
+    #Start the blink animation
+    target_strip.restart_thread(target_strip.blink,args=(colors, speed))
+
+    #Send a response to the client
+    return jsonify({'status': 'success'}), 201
+
+#Pause a running animation.
 @app.route('/pause',methods=['POST'])
 def pause():
     try:
-        target_strip = get_strip(request.json['target_strip'])
+        #Validate the request payload
+        data = request.json
+        jsonschema.validate(data,rschema.base_schema)
+        target_strip = get_strip(data['target_strip'])
+    #Return an error if validation fails
+    except jsonschema.ValidationError as e:
+        return jsonify({"error": e.message}), 400
+    #Return an error if the strip doesn't exist
     except KeyError:
-        return jsonify({'error': 'No strip specified'}), 400
+        return jsonify({'error': ('Strip ' + data['target_strip'] + " doesn't exist!")  }), 400
+
+    #Get the target strip's thread
     thread = target_strip.get_thread()
+
+    #Check to see if the thread is actually running something
     if thread is not None:
         if not thread.paused():
             thread.pause()
-            return jsonify({'status': 'success'})
+            return jsonify({'status': 'success'}), 201
         else:
-            return jsonify({'error': 'Thread is already paused'})
+            return jsonify({'error': 'Animation is already paused'}), 400
     else:
-        return jsonify({'error': 'No thread found'})
+        return jsonify({'error': 'No animation found'}), 400
 
+#Resume a paused animation
 @app.route('/resume',methods=['POST'])
 def resume():
     try:
-        target_strip = get_strip(request.json['target_strip'])
+        #Validate the request payload
+        data = request.json
+        jsonschema.validate(data,rschema.base_schema)
+        target_strip = get_strip(data['target_strip'])
+    #Return an error if validation fails
+    except jsonschema.ValidationError as e:
+        return jsonify({"error": e.message}), 400
+    #Return an error if the strip doesn't exist
     except KeyError:
-        return jsonify({'error': 'No strip specified'}), 400
+        return jsonify({'error': ('Strip ' + data['target_strip'] + " doesn't exist!")  }), 400
+
+    #Get the target strip's thread
     thread = target_strip.get_thread()
+
+    #Check to see if the thread is actually running something
     if thread is not None:
         if thread.paused():
             thread.resume()
-            return jsonify({'status': 'success'})
+            return jsonify({'status': 'success'}), 201
         else:
-            return jsonify({'error': 'Thread is not paused'})
+            return jsonify({'error': 'Animation is not paused'}), 400
     else:
-        return jsonify({'error': 'No thread found'})
+        return jsonify({'error': 'No animation found'}), 400
 
+#Set the brightness of the LED strip. Not really effective on fade animations
 @app.route('/setbrightness', methods=['POST'])
 def set_brightness():
     try:
-        target_strip = get_strip(request.json['target_strip'])
+        #Validate the request payload
+        data = request.json
+        jsonschema.validate(data,rschema.base_schema)
+        jsonschema.validate(data,rschema.brightness_schema)
+        target_strip = get_strip(data['target_strip'])
+    #Return an error if validation fails
+    except jsonschema.ValidationError as e:
+        return jsonify({"error": e.message}), 400
+    #Return an error if the strip doesn't exist
     except KeyError:
-        return jsonify({'error': 'No strip specified'}), 400
+        return jsonify({'error': ('Strip ' + data['target_strip'] + " doesn't exist!")  }), 400
+        
+    #Get the target strip's thread
     thread = target_strip.get_thread()
-    if thread is not None: thread.pause()
-    data = request.json
-    brightness = data.get('brightness', 127)
+    
+    #if thread is not None: thread.pause()
+
+    #Read the request payload
+    brightness = data['brightness']
+
+    #Set the strip brightness
     target_strip.set_brightness(brightness)
-    if thread is not None: thread.resume()
-    return jsonify({'status': 'success'})
+
+    #if thread is not None: thread.resume()
+
+    #Send a response to the client
+    return jsonify({'status': 'success'}), 201
 
 @app.route('/addstrip', methods=['POST'])
 def add_strip():
