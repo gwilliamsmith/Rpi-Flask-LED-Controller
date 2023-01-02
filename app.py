@@ -43,6 +43,7 @@ def teardown_strip(strip_name):
 def get_strip(strip_name):
     global Strips
     return Strips[strip_name]
+
 """
 Routes:
 """
@@ -50,17 +51,30 @@ Routes:
 @app.route('/setcolor', methods=['POST'])
 def set_color():
     try:
-        target_strip = get_strip(request.json['strip_name'])
+        #Validate the request payload
+        data = request.json
+        jsonschema.validate(data,rschema.base_schema)
+        jsonschema.validate(data,rschema.color_schema)
+        jsonschema.validate(data,rschema.brightness_schema)
+        target_strip = get_strip(data['strip_name'])
+    #Return an error if validation fails
+    except jsonschema.ValidationError as e:
+        return jsonify({"error": e.message}), 400
+    #Return an error if the strip doesn't exist
     except KeyError:
-        return jsonify({'error': 'No strip specified'}), 400
+        return jsonify({'error': ('Strip ' + data['strip_name'] + " doesn't exist!")  }), 400
+    
+    #Stop any animation that's running on the strip
     target_strip.stop_thread()
-    # Read the color from the request body
+    
+    #Get the color from the payload
+    color = data['color']
 
-    color = request.json['color']
+    #Set the LEDStrip pixels to the given color
     target_strip.set_all_pixels(color)
 
     # Send a response to the client
-    return jsonify({'status': 'success'})
+    return jsonify({'status': 'success'}), 201
 
 @app.route('/setpattern', methods=['POST'])
 def set_pattern():
