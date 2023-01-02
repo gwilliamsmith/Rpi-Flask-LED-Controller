@@ -10,6 +10,8 @@ import route_schemas as rschema
 app = Flask(__name__)
 CORS(app)
 
+Strips = {}
+
 """
 Helper functions:
 """
