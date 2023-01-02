@@ -10,20 +10,6 @@ import route_schemas as rschema
 app = Flask(__name__)
 CORS(app)
 
-# Initialize the WS2812B LED strip
-LED_COUNT = 30  # Change this to match the number of LEDs on your strip
-LED_PIN = 12
-LED_FREQ_HZ = 800000
-LED_DMA = 10
-LED_BRIGHTNESS = 50
-LED_INVERT = False
-LED_CHANNEL = 0
-
-# Dict of LEDStrips
-Strips = {}
-
-#Strips['desk_strip'] = LEDStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
-
 """
 Helper functions:
 """
@@ -56,13 +42,13 @@ def set_color():
         jsonschema.validate(data,rschema.base_schema)
         jsonschema.validate(data,rschema.color_schema)
         jsonschema.validate(data,rschema.brightness_schema)
-        target_strip = get_strip(data['strip_name'])
+        target_strip = get_strip(data['target_strip'])
     #Return an error if validation fails
     except jsonschema.ValidationError as e:
         return jsonify({"error": e.message}), 400
     #Return an error if the strip doesn't exist
     except KeyError:
-        return jsonify({'error': ('Strip ' + data['strip_name'] + " doesn't exist!")  }), 400
+        return jsonify({'error': ('Strip ' + data['target_strip'] + " doesn't exist!")  }), 400
     
     #Stop any animation that's running on the strip
     target_strip.stop_thread()
@@ -85,13 +71,13 @@ def set_pattern():
         jsonschema.validate(data,rschema.base_schema)
         jsonschema.validate(data,rschema.pattern_schema)
         jsonschema.validate(data,rschema.brightness_schema)
-        target_strip = get_strip(data['strip_name'])
+        target_strip = get_strip(data['target_strip'])
     #Return an error if validation fails
     except jsonschema.ValidationError as e:
         return jsonify({"error": e.message}), 400
     #Return an error if the strip doesn't exist
     except KeyError:
-        return jsonify({'error': ('Strip ' + data['strip_name'] + " doesn't exist!")  }), 400
+        return jsonify({'error': ('Strip ' + data['target_strip'] + " doesn't exist!")  }), 400
     
     #Stop any animation that's running on the strip
     target_strip.stop_thread()
@@ -119,20 +105,20 @@ def start_rainbow():
         jsonschema.validate(data,rschema.start_rainbow_schema)
         jsonschema.validate(data,rschema.speed_schema)
         jsonschema.validate(data,rschema.brightness_schema)
-        target_strip = get_strip(data['strip_name'])
+        target_strip = get_strip(data['target_strip'])
     #Return an error if validation fails
     except jsonschema.ValidationError as e:
         return jsonify({"error": e.message}), 400
     #Return an error if the strip doesn't exist
     except KeyError:
-        return jsonify({'error': ('Strip ' + data['strip_name'] + " doesn't exist!")  }), 400
+        return jsonify({'error': ('Strip ' + data['target_strip'] + " doesn't exist!")  }), 400
     
     #Read from the request payload
-    interval = data['interval']
+    color_interval = data['color_interval']
     speed = data['speed']
 
     # Start the rainbow cycle in a new thread
-    target_strip.restart_thread(target_strip.cycle_rainbow, args=(interval,speed))
+    target_strip.restart_thread(target_strip.cycle_rainbow, args=(color_interval,speed))
 
     # Send a response to the client
     return jsonify({'status': 'success'}), 201
@@ -144,13 +130,13 @@ def clear():
         #Validate the request payload
         data = request.json
         jsonschema.validate(data,rschema.base_schema)
-        target_strip = get_strip(data['strip_name'])
+        target_strip = get_strip(data['target_strip'])
     #Return an error if validation fails
     except jsonschema.ValidationError as e:
         return jsonify({"error": e.message}), 400
     #Return an error if the strip doesn't exist
     except KeyError:
-        return jsonify({'error': ('Strip ' + data['strip_name'] + " doesn't exist!")  }), 400
+        return jsonify({'error': ('Strip ' + data['target_strip'] + " doesn't exist!")  }), 400
 
     #Stop any animations running on the strip
     target_strip.stop_thread()
@@ -161,76 +147,120 @@ def clear():
     # Send a response to the client
     return jsonify({'status': 'success'}), 201
 
+#Sends a color across the LED strip
 @app.route('/colorwipe', methods=['POST'])
 def color_wipe():
     try:
-        target_strip = get_strip(request.json['strip_name'])
+        #Validate the request payload
+        data = request.json
+        jsonschema.validate(data,rschema.base_schema)
+        jsonschema.validate(data,rschema.color_wipe_schema)
+        jsonschema.validate(data,rschema.speed_schema)
+        jsonschema.validate(data,rschema.brightness_schema)
+        target_strip = get_strip(data['target_strip'])
+    #Return an error if validation fails
+    except jsonschema.ValidationError as e:
+        return jsonify({"error": e.message}), 400
+    #Return an error if the strip doesn't exist
     except KeyError:
-        return jsonify({'error': 'No strip specified'}), 400
+        return jsonify({'error': ('Strip ' + data['target_strip'] + " doesn't exist!")  }), 400
 
-    data = request.json
+    #Read from request payload
     bg_color = data['bg_color']
     wipe_color = data['wipe_color']
     pixels = data['pixels']
-    interval = data['interval']
+    speed = data['speed']
     seamless = data['seamless']
-    brightness = data.get('brightness', 50)
+    brightness = data['brightness']
 
-    target_strip.restart_thread(target_strip.color_wipe, args=(bg_color, wipe_color, pixels, interval, seamless))
+    #Update LED strip brightness
+    target_strip.set_brightness(brightness)
 
-    return jsonify({'status': 'success'})
+    #Start the color wipe in a new thread
+    target_strip.restart_thread(target_strip.color_wipe, args=(bg_color, wipe_color, pixels, speed, seamless))
 
-# Define the '/fadecolor' endpoint
+    #Send a response to the client
+    return jsonify({'status': 'success'}), 201
+
+#Fades a color in and out on the whole strip
 @app.route('/fadecolor', methods=['POST'])
 def fade_color():
     try:
-        target_strip = get_strip(request.json['strip_name'])
+        #Validate the request payload
+        data = request.json
+        jsonschema.validate(data,rschema.base_schema)
+        jsonschema.validate(data,rschema.color_schema)
+        jsonschema.validate(data,rschema.fade_brightness_schema)
+        jsonschema.validate(data,rschema.speed_schema)
+        target_strip = get_strip(data['target_strip'])
+    #Return an error if validation fails
+    except jsonschema.ValidationError as e:
+        return jsonify({"error": e.message}), 400
+    #Return an error if the strip doesn't exist
     except KeyError:
-        return jsonify({'error': 'No strip specified'}), 400
-    # Read the color, minimum brightness, maximum brightness, and interval from the request body, if present
-    data = request.json
-    color = data.get('color', '#FFFFFF')
-    min_brightness = data.get('min_brightness', 0)
-    max_brightness = data.get('max_brightness', 255)
-    interval = data.get('interval', 500)
-    target_strip.restart_thread(target_strip.fade,args=(color,min_brightness,max_brightness,interval))
-    return jsonify({'status': 'success'})
+        return jsonify({'error': ('Strip ' + data['target_strip'] + " doesn't exist!")  }), 400
 
+    #Read the request payload
+    color = data['color']
+    min_brightness = data['min_brightness']
+    max_brightness = data['max_brightness']
+    speed = data['speed']
+
+    #Start the fade animation in a new thread
+    target_strip.restart_thread(target_strip.fade,args=(color,min_brightness,max_brightness,speed))
+
+    #Send a response to the client
+    return jsonify({'status': 'success'}), 201
+
+#Fades a pattern of colors in and out
 @app.route('/fadepattern',methods=['POST'])
 def fade_pattern():
     try:
-        target_strip = get_strip(request.json['strip_name'])
+        #Validate the request payload
+        data = request.json
+        jsonschema.validate(data,rschema.base_schema)
+        jsonschema.validate(data,rschema.pattern_schema)
+        jsonschema.validate(data,rschema.fade_brightness_schema)
+        jsonschema.validate(data,rschema.speed_schema)
+        target_strip = get_strip(data['target_strip'])
+    #Return an error if validation fails
+    except jsonschema.ValidationError as e:
+        return jsonify({"error": e.message}), 400
+    #Return an error if the strip doesn't exist
     except KeyError:
-        return jsonify({'error': 'No strip specified'}), 400
-    #Read the pattern, minimum brightness, maximum brightness, and interval from the request body, if present
-    data = request.json
-    pattern = data['pattern']
-    min_brightness = data.get('min_brightness', 0)
-    max_brightness = data.get('max_brightness', 255)
-    interval = data.get('interval', 500)
+        return jsonify({'error': ('Strip ' + data['target_strip'] + " doesn't exist!")  }), 400
 
-    target_strip.restart_thread(target_strip.fadePattern, args=(pattern,min_brightness,max_brightness,interval))
-    return jsonify({'status': 'success'})
+    #Read the request payload
+    pattern = data['pattern']
+    min_brightness = data['min_brightness']
+    max_brightness = data['max_brightness']
+    speed = data['speed']
+
+    #Start the fade animation in a new thread
+    target_strip.restart_thread(target_strip.fadePattern, args=(pattern,min_brightness,max_brightness,speed))
+    
+    #Send a response to the client
+    return jsonify({'status': 'success'}), 201
 
 @app.route('/blink',methods=['POST'])
 def blink():
     try:
-        target_strip = get_strip(request.json['strip_name'])
+        target_strip = get_strip(request.json['target_strip'])
     except KeyError:
         return jsonify({'error': 'No strip specified'}), 400
     data = request.json
     color1 = data.get('color1', '#FFFFFF')
     color2 = data.get('color2', '#000000')
-    interval = data.get('interval', 500)
+    speed = data.get('speed', 500)
     brightness = data.get('brightness', 50)
 
-    target_strip.restart_thread(target_strip.blink,args=(color1,color2, interval))
+    target_strip.restart_thread(target_strip.blink,args=(color1,color2, speed))
     return jsonify({'status': 'success'})
 
 @app.route('/pause',methods=['POST'])
 def pause():
     try:
-        target_strip = get_strip(request.json['strip_name'])
+        target_strip = get_strip(request.json['target_strip'])
     except KeyError:
         return jsonify({'error': 'No strip specified'}), 400
     thread = target_strip.get_thread()
@@ -246,7 +276,7 @@ def pause():
 @app.route('/resume',methods=['POST'])
 def resume():
     try:
-        target_strip = get_strip(request.json['strip_name'])
+        target_strip = get_strip(request.json['target_strip'])
     except KeyError:
         return jsonify({'error': 'No strip specified'}), 400
     thread = target_strip.get_thread()
@@ -262,7 +292,7 @@ def resume():
 @app.route('/setbrightness', methods=['POST'])
 def set_brightness():
     try:
-        target_strip = get_strip(request.json['strip_name'])
+        target_strip = get_strip(request.json['target_strip'])
     except KeyError:
         return jsonify({'error': 'No strip specified'}), 400
     thread = target_strip.get_thread()
