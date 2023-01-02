@@ -27,9 +27,11 @@ def setup_strip(STRIP_NAME, LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_BRIGHT
             raise IndexError
     Strips[STRIP_NAME] = LEDStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_BRIGHTNESS, LED_INVERT, LED_CHANNEL)
 
-def teardown_strip(strip_name):
+def teardown_strip(target_strip):
     global Strips
-    target_strip = Strips.pop(strip_name)
+    if target_strip not in Strips:
+        return KeyError
+    target_strip = Strips.pop(target_strip)
     target_strip.clear()
     target_strip.stop_thread()
 
@@ -392,8 +394,8 @@ def add_strip():
 def remove_strip():
     try:
         jsonschema.validate(request.json,rschema.base_schema)
-        strip_name = request.json["target_strip"]
-        teardown_strip(strip_name)
+        target_strip = request.json["target_strip"]
+        teardown_strip(target_strip)
     except jsonschema.ValidationError as e:
         return jsonify({"error": e.message}), 400
     return jsonify({'status': 'success'}), 201
@@ -403,7 +405,6 @@ Clear the strip when the program ends from ctrl-c or on pi shutdown
 """
 def end_signal_handler(signal, frame):
     global Strips
-    """Clean up resources and exit the app when `SIGHUP` is received."""
     try:
         # Clean up resources here
             for strip in Strips:
