@@ -137,16 +137,29 @@ def start_rainbow():
     # Send a response to the client
     return jsonify({'status': 'success'}), 201
 
+#Clear the LED strip and turn all LEDs off
 @app.route('/clear', methods=['POST'])
 def clear():
     try:
-        target_strip = get_strip(request.json['strip_name'])
+        #Validate the request payload
+        data = request.json
+        jsonschema.validate(data,rschema.base_schema)
+        target_strip = get_strip(data['strip_name'])
+    #Return an error if validation fails
+    except jsonschema.ValidationError as e:
+        return jsonify({"error": e.message}), 400
+    #Return an error if the strip doesn't exist
     except KeyError:
-        return jsonify({'error': 'No strip specified'}), 400
+        return jsonify({'error': ('Strip ' + data['strip_name'] + " doesn't exist!")  }), 400
+
+    #Stop any animations running on the strip
     target_strip.stop_thread()
+
+    #Clear the LED strip
     target_strip.clear()
+
     # Send a response to the client
-    return jsonify({'status': 'success'})
+    return jsonify({'status': 'success'}), 201
 
 @app.route('/colorwipe', methods=['POST'])
 def color_wipe():
