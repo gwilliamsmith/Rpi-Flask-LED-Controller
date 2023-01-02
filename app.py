@@ -23,7 +23,7 @@ def setup_strip(STRIP_NAME, LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_BRIGHT
     if STRIP_NAME in Strips:
         raise KeyError
     for strip in Strips:
-        if LED_COUNT == Strips[strip].LED_COUNT:
+        if LED_PIN == Strips[strip].pin:
             raise IndexError
     Strips[STRIP_NAME] = LEDStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_BRIGHTNESS, LED_INVERT, LED_CHANNEL)
 

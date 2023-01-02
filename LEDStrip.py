@@ -11,6 +11,7 @@ class LEDStrip():
         self.num_leds = LED_COUNT
         self.brightness = LED_BRIGHTNESS
         self.channel = LED_CHANNEL
+        self.pin = LED_PIN
 
         # Initialize the LED strip
         self.strip = rpi_ws281x.PixelStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
