@@ -433,6 +433,6 @@ def __load_strips():
     with open('init.json', 'r') as f:
         init_strips =  json.load(f)
     for strip in init_strips:
-        requests.post('localhost:5000/addstrip')
+        requests.post('http://localhost:5000/addstrip')
 
 __load_strips()
