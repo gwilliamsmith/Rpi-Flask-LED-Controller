@@ -6,9 +6,13 @@ from LEDStrip import LEDStrip
 import signal
 import jsonschema
 import route_schemas as rschema
+import json
+import requests
 
 app = Flask(__name__)
 CORS(app)
+
+PORT_NUM = 5000
 
 Strips = {}
 
@@ -421,4 +425,14 @@ def end_signal_handler(signal, frame):
 signal.signal(signal.SIGHUP,end_signal_handler)
 signal.signal(signal.SIGINT, end_signal_handler)
 
+"""
+Load initial strip congfiguration from init.json
+"""
+def __load_strips():
+    global PORT_NUM
+    with open('init.json', 'r') as f:
+        init_strips =  json.load(f)
+    for strip in init_strips:
+        requests.post('localhost:5000/addstrip')
 
+__load_strips()
