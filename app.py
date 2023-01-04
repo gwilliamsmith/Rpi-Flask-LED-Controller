@@ -432,6 +432,7 @@ Load initial strip congfiguration from init.json
 def __load_strips():
     with open('init.json', 'r') as f:
         init_strips =  json.load(f)
+        print(init_strips)
     for strip in init_strips:
         try:
             print(strip)
