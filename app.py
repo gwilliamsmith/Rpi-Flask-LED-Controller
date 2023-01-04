@@ -32,14 +32,14 @@ def setup_strip(STRIP_NAME, LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_BRIGHT
     print("\t" + STRIP_NAME + " added on pin " + str(LED_PIN))
     Strips[STRIP_NAME] = LEDStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_BRIGHTNESS, LED_INVERT, LED_CHANNEL)
 
-def teardown_strip(target_strip):
+def teardown_strip(target_strip_name):
     global Strips
-    if target_strip not in Strips:
+    if target_strip_name not in Strips:
         raise KeyError
-    target_strip = Strips.pop(target_strip)
+    target_strip = Strips.pop(target_strip_name)
     target_strip.clear()
     target_strip.stop_thread()
-    print("\t " + target_strip + " removed")
+    print("\t " + target_strip_name + " removed")
 
 def get_strip(strip_name):
     global Strips
