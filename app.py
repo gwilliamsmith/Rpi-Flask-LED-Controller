@@ -6,9 +6,13 @@ from LEDStrip import LEDStrip
 import signal
 import jsonschema
 import route_schemas as rschema
+import json
+import requests
 
 app = Flask(__name__)
 CORS(app)
+
+PORT_NUM = 5000
 
 Strips = {}
 
@@ -25,15 +29,17 @@ def setup_strip(STRIP_NAME, LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_BRIGHT
     for strip in Strips:
         if LED_PIN == Strips[strip].pin:
             raise IndexError
+    print("\t" + STRIP_NAME + " added on pin " + str(LED_PIN))
     Strips[STRIP_NAME] = LEDStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_BRIGHTNESS, LED_INVERT, LED_CHANNEL)
 
-def teardown_strip(target_strip):
+def teardown_strip(target_strip_name):
     global Strips
-    if target_strip not in Strips:
+    if target_strip_name not in Strips:
         raise KeyError
-    target_strip = Strips.pop(target_strip)
+    target_strip = Strips.pop(target_strip_name)
     target_strip.clear()
     target_strip.stop_thread()
+    print("\t " + target_strip_name + " removed")
 
 def get_strip(strip_name):
     global Strips
@@ -409,8 +415,9 @@ def end_signal_handler(signal, frame):
     global Strips
     try:
         # Clean up resources here
-            for strip in Strips:
-                teardown_strip(Strips[strip])
+        for strip in list(Strips):
+            print("\tRemoving " + strip)
+            teardown_strip(strip)
     except Exception as e:
         # Log the error
         print(f'Error while cleaning up resources: {e}')
@@ -421,4 +428,40 @@ def end_signal_handler(signal, frame):
 signal.signal(signal.SIGHUP,end_signal_handler)
 signal.signal(signal.SIGINT, end_signal_handler)
 
+"""
+Load initial strip congfiguration from init.json
+"""
+def __load_strips():
+    with open('init.json', 'r') as f:
+        init_strips =  json.load(f)
+    try:
+        for strip in init_strips['strips']:
+            strip_name = strip["STRIP_NAME"]
+            led_count = strip["LED_COUNT"]
+            led_pin = strip["LED_PIN"]
+            led_freq_hz = strip["LED_FREQ_HZ"]
+            led_dma = strip["LED_DMA"]
+            led_invert = strip["LED_INVERT"]
+            led_brightness = strip["LED_BRIGHTNESS"]
+            led_channel = strip["LED_CHANNEL"]
+            print("\tLoading " + strip_name + " on pin " + str(led_pin) + "...")
+            setup_strip(strip_name, led_count, led_pin, led_freq_hz, led_dma, led_invert, led_brightness, led_channel)
+    except jsonschema.ValidationError as e:
+        print("\n" + e.message)
+        print("Please update init.json to resolve this error.")
+        return
+    except ValueError:
+        print("\nYou cannot add more three LED strips!")
+        print("Please update init.json to resolve this error.")
+        return
+    except KeyError:
+        print("\nAn LED strip with that name already exists!")
+        print("Please update init.json to resolve this error.")
+        return
+    except IndexError:
+        print("\nAn LED strip is already using that pin!")
+        print("Please update init.json to resolve this error.")
+        return
+
+__load_strips()
 

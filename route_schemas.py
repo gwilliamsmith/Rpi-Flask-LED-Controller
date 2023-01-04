@@ -121,7 +121,6 @@ add_strip_schema = {
         'LED_PIN': {
             'type': 'integer',
             'enum': [12, 18, 40, 52, 13, 19, 41, 45, 53]},
-        },
         "LED_FREQ_HZ": {"type": "integer"},
         "LED_DMA": {"type": "integer"},
         "LED_INVERT": {"type": "boolean"},
@@ -129,26 +128,28 @@ add_strip_schema = {
             'type': 'integer',
             'minimum': 0,
             'maximum': 255
+        }
+    },
+    "if":{
+        "properties":{
+            "LED_PIN": {"enum":[12, 18, 40, 52]}
+        }
+    },
+    "then":{
+        "properties":{
+            "LED_CHANNEL": {"enum":[0]}
         },
-        "if":{
-            "properties":{
-                "LED_PIN": {"enum":[12, 18, 40, 52]}
-            }
+        "required":["LED_CHANNEL"]
+    },
+    "else":{
+        "properties":{
+            "LED_CHANNEL": {"enum":[1]}
         },
-        "then":{
-            "properties":{
-                "LED_CHANNEL": {"enum":[0]}
-            },
-            "required":["LED_CHANNEL"]
-        },
-        "else":{
-            "properties":{
-                "LED_CHANNEL": {"enum":[1]}
-            },
-            "required":["LED_CHANNEL"]
-        },
-        "required": ["STRIP_NAME", "LED_COUNT", "LED_PIN", "LED_FREQ_HZ", "LED_DMA", "LED_INVERT", "LED_BRIGHTNESS", "LED_CHANNEL"]
+        "required":["LED_CHANNEL"]
+    },
+    "required": ["STRIP_NAME", "LED_COUNT", "LED_PIN", "LED_FREQ_HZ", "LED_DMA", "LED_INVERT", "LED_BRIGHTNESS", "LED_CHANNEL"]
 }
+
 
 color_wipe_schema = {
     'type': 'object',
@@ -168,6 +169,49 @@ color_wipe_schema = {
         'seamless' : {'type':'boolean'}
     },
     'required':['bg_color', 'wipe_color', 'pixels']
+}
+
+init_schema = {
+    'type': 'object',
+    'properties': {
+        'strips': 'array',
+        "items": {
+            "type": "object",
+            "properties": {
+                "STRIP_NAME": {"type": "string"},
+                "LED_COUNT": {"type": "integer"},
+                'LED_PIN': {
+                    'type': 'integer',
+                    'enum': [12, 18, 40, 52, 13, 19, 41, 45, 53]},
+                "LED_FREQ_HZ": {"type": "integer"},
+                "LED_DMA": {"type": "integer"},
+                "LED_INVERT": {"type": "boolean"},
+                'LED_BRIGHTNESS': {
+                    'type': 'integer',
+                    'minimum': 0,
+                    'maximum': 255
+                },
+            "if":{
+                "properties":{
+                    "LED_PIN": {"enum":[12, 18, 40, 52]}
+                }
+            },
+            "then":{
+                "properties":{
+                    "LED_CHANNEL": {"enum":[0]}
+                },
+                "required":["LED_CHANNEL"]
+            },
+            "else":{
+                "properties":{
+                    "LED_CHANNEL": {"enum":[1]}
+                },
+                "required":["LED_CHANNEL"]
+            },
+            "required": ["STRIP_NAME", "LED_COUNT", "LED_PIN", "LED_FREQ_HZ", "LED_DMA", "LED_INVERT", "LED_BRIGHTNESS", "LED_CHANNEL"]
+        }        
+        }
+    }
 }
 
 start_rainbow_schema = {
