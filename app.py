@@ -432,15 +432,8 @@ Load initial strip congfiguration from init.json
 def __load_strips():
     with open('init.json', 'r') as f:
         init_strips =  json.load(f)
-        print(init_strips)
-        try:
-            jsonschema.validate(init_strips,init_strips)
-        except jsonschema.ValidationError as e:
-            print(e.message)
-            print("Please update init.json to resolve this error.")
-    for strip in init_strips['strips']:
-        try:
-            print(strip)
+    try:
+        for strip in init_strips['strips']:
             strip_name = strip["STRIP_NAME"]
             led_count = strip["LED_COUNT"]
             led_pin = strip["LED_PIN"]
@@ -449,23 +442,24 @@ def __load_strips():
             led_invert = strip["LED_INVERT"]
             led_brightness = strip["LED_BRIGHTNESS"]
             led_channel = strip["LED_CHANNEL"]
+            print("Loading " + strip_name + " on pin " + str(led_pin) + "...")
             setup_strip(strip_name, led_count, led_pin, led_freq_hz, led_dma, led_invert, led_brightness, led_channel)
-        except jsonschema.ValidationError as e:
-            print(e.message)
-            print("Please update init.json to resolve this error.")
-            return
-        except ValueError:
-            print("You cannot add more three LED strips!")
-            print("Please update init.json to resolve this error.")
-            return
-        except KeyError:
-            print("An LED strip with that name already exists!")
-            print("Please update init.json to resolve this error.")
-            return
-        except IndexError:
-            print("An LED strip is already using that pin!")
-            print("Please update init.json to resolve this error.")
-            return
+    except jsonschema.ValidationError as e:
+        print(e.message)
+        print("Please update init.json to resolve this error.")
+        return
+    except ValueError:
+        print("You cannot add more three LED strips!")
+        print("Please update init.json to resolve this error.")
+        return
+    except KeyError:
+        print("An LED strip with that name already exists!")
+        print("Please update init.json to resolve this error.")
+        return
+    except IndexError:
+        print("An LED strip is already using that pin!")
+        print("Please update init.json to resolve this error.")
+        return
 
 __load_strips()
 

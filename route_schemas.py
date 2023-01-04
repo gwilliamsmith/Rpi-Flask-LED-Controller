@@ -128,27 +128,28 @@ add_strip_schema = {
             'type': 'integer',
             'minimum': 0,
             'maximum': 255
+        }
+    },
+    "if":{
+        "properties":{
+            "LED_PIN": {"enum":[12, 18, 40, 52]}
+        }
+    },
+    "then":{
+        "properties":{
+            "LED_CHANNEL": {"enum":[0]}
         },
-        "if":{
-            "properties":{
-                "LED_PIN": {"enum":[12, 18, 40, 52]}
-            }
+        "required":["LED_CHANNEL"]
+    },
+    "else":{
+        "properties":{
+            "LED_CHANNEL": {"enum":[1]}
         },
-        "then":{
-            "properties":{
-                "LED_CHANNEL": {"enum":[0]}
-            },
-            "required":["LED_CHANNEL"]
-        },
-        "else":{
-            "properties":{
-                "LED_CHANNEL": {"enum":[1]}
-            },
-            "required":["LED_CHANNEL"]
-        },
-        "required": ["STRIP_NAME", "LED_COUNT", "LED_PIN", "LED_FREQ_HZ", "LED_DMA", "LED_INVERT", "LED_BRIGHTNESS", "LED_CHANNEL"]
-    }
+        "required":["LED_CHANNEL"]
+    },
+    "required": ["STRIP_NAME", "LED_COUNT", "LED_PIN", "LED_FREQ_HZ", "LED_DMA", "LED_INVERT", "LED_BRIGHTNESS", "LED_CHANNEL"]
 }
+
 
 color_wipe_schema = {
     'type': 'object',
