@@ -429,10 +429,32 @@ signal.signal(signal.SIGINT, end_signal_handler)
 Load initial strip congfiguration from init.json
 """
 def __load_strips():
-    global PORT_NUM
     with open('init.json', 'r') as f:
         init_strips =  json.load(f)
     for strip in init_strips:
-        requests.post('http://localhost:5000/addstrip', data=init_strips)
+        try:
+            jsonschema.validate(strip,rschema.add_strip_schema)
+            strip_name = strip["STRIP_NAME"]
+            led_count = strip["LED_COUNT"]
+            led_pin = strip["LED_PIN"]
+            led_freq_hz = strip["LED_FREQ_HZ"]
+            led_dma = strip["LED_DMA"]
+            led_invert = strip["LED_INVERT"]
+            led_brightness = strip["LED_BRIGHTNESS"]
+            led_channel = strip["LED_CHANNEL"]
+            setup_strip(strip_name, led_count, led_pin, led_freq_hz, led_dma, led_invert, led_brightness, led_channel)
+        except jsonschema.ValidationError as e:
+            print(e.message)
+            print("Please update init.json to resolve this error.")
+        except ValueError:
+            print("You cannot add more three LED strips!")
+            print("Please update init.json to resolve this error.")
+        except KeyError:
+            print("An LED strip with that name already exists!")
+            print("Please update init.json to resolve this error.")
+        except IndexError:
+            print("An LED strip is already using that pin!")
+            print("Please update init.json to resolve this error.")
 
 __load_strips()
+
