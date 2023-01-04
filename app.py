@@ -414,8 +414,8 @@ def end_signal_handler(signal, frame):
     global Strips
     try:
         # Clean up resources here
-            for strip in Strips:
-                teardown_strip(Strips[strip])
+        for strip in Strips:
+            teardown_strip(Strips[strip])
     except Exception as e:
         # Log the error
         print(f'Error while cleaning up resources: {e}')
