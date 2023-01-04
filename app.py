@@ -416,7 +416,7 @@ def end_signal_handler(signal, frame):
         # Clean up resources here
         for strip in Strips:
             print("Removing " + strip)
-            teardown_strip(Strips[strip])
+            teardown_strip(strip)
     except Exception as e:
         # Log the error
         print(f'Error while cleaning up resources: {e}')
