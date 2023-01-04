@@ -433,6 +433,7 @@ def __load_strips():
         init_strips =  json.load(f)
     for strip in init_strips:
         try:
+            print(strip)
             jsonschema.validate(strip,rschema.add_strip_schema)
             strip_name = strip["STRIP_NAME"]
             led_count = strip["LED_COUNT"]
