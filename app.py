@@ -29,7 +29,7 @@ def setup_strip(STRIP_NAME, LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_BRIGHT
     for strip in Strips:
         if LED_PIN == Strips[strip].pin:
             raise IndexError
-    print(STRIP_NAME + " added on pin " + LED_PIN)
+    print(STRIP_NAME + " added on pin " + str(LED_PIN))
     Strips[STRIP_NAME] = LEDStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_BRIGHTNESS, LED_INVERT, LED_CHANNEL)
 
 def teardown_strip(target_strip):
