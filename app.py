@@ -433,7 +433,12 @@ def __load_strips():
     with open('init.json', 'r') as f:
         init_strips =  json.load(f)
         print(init_strips)
-    for strip in init_strips:
+        try:
+            jsonschema.validate(init_strips,init_strips)
+        except jsonschema.ValidationError as e:
+            print(e.message)
+            print("Please update init.json to resolve this error.")
+    for strip in init_strips['strips']:
         try:
             print(strip)
             jsonschema.validate(strip,rschema.add_strip_schema)
@@ -449,15 +454,19 @@ def __load_strips():
         except jsonschema.ValidationError as e:
             print(e.message)
             print("Please update init.json to resolve this error.")
+            return
         except ValueError:
             print("You cannot add more three LED strips!")
             print("Please update init.json to resolve this error.")
+            return
         except KeyError:
             print("An LED strip with that name already exists!")
             print("Please update init.json to resolve this error.")
+            return
         except IndexError:
             print("An LED strip is already using that pin!")
             print("Please update init.json to resolve this error.")
+            return
 
 __load_strips()
 
