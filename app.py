@@ -29,7 +29,7 @@ def setup_strip(STRIP_NAME, LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_BRIGHT
     for strip in Strips:
         if LED_PIN == Strips[strip].pin:
             raise IndexError
-    print(STRIP_NAME + " added on pin " + str(LED_PIN))
+    print("\t" + STRIP_NAME + " added on pin " + str(LED_PIN))
     Strips[STRIP_NAME] = LEDStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_BRIGHTNESS, LED_INVERT, LED_CHANNEL)
 
 def teardown_strip(target_strip):
@@ -39,6 +39,7 @@ def teardown_strip(target_strip):
     target_strip = Strips.pop(target_strip)
     target_strip.clear()
     target_strip.stop_thread()
+    print("\t " + target_strip + " removed")
 
 def get_strip(strip_name):
     global Strips
@@ -414,8 +415,8 @@ def end_signal_handler(signal, frame):
     global Strips
     try:
         # Clean up resources here
-        for strip in Strips:
-            print("Removing " + strip)
+        for strip in list(Strips):
+            print("\tRemoving " + strip)
             teardown_strip(strip)
     except Exception as e:
         # Log the error
@@ -443,22 +444,22 @@ def __load_strips():
             led_invert = strip["LED_INVERT"]
             led_brightness = strip["LED_BRIGHTNESS"]
             led_channel = strip["LED_CHANNEL"]
-            print("Loading " + strip_name + " on pin " + str(led_pin) + "...")
+            print("\tLoading " + strip_name + " on pin " + str(led_pin) + "...")
             setup_strip(strip_name, led_count, led_pin, led_freq_hz, led_dma, led_invert, led_brightness, led_channel)
     except jsonschema.ValidationError as e:
-        print(e.message)
+        print("\n" + e.message)
         print("Please update init.json to resolve this error.")
         return
     except ValueError:
-        print("You cannot add more three LED strips!")
+        print("\nYou cannot add more three LED strips!")
         print("Please update init.json to resolve this error.")
         return
     except KeyError:
-        print("An LED strip with that name already exists!")
+        print("\nAn LED strip with that name already exists!")
         print("Please update init.json to resolve this error.")
         return
     except IndexError:
-        print("An LED strip is already using that pin!")
+        print("\nAn LED strip is already using that pin!")
         print("Please update init.json to resolve this error.")
         return
 
