@@ -1,4 +1,4 @@
-[{
+{
     "STRIP_NAME": "desk_strip",
     "LED_COUNT": 30,
     "LED_PIN": 12,
@@ -7,4 +7,4 @@
     "LED_BRIGHTNESS": 50,
     "LED_INVERT": false,
     "LED_CHANNEL": 0
-}]
+}
