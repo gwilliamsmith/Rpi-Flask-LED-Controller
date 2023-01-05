@@ -68,11 +68,15 @@ def set_color():
     #Stop any animation that's running on the strip
     target_strip.stop_thread()
     
-    #Get the color from the payload
+    #Get data from the payload
     color = data['color']
+    brightness = data['brightness']
 
     #Set the LEDStrip pixels to the given color
     target_strip.set_all_pixels(color)
+
+    #Update LED strip brightness
+    target_strip.set_brightness(brightness)
 
     # Send a response to the client
     return jsonify({'status': 'success'}), 201
@@ -101,11 +105,11 @@ def set_pattern():
     pattern = data['pattern']
     brightness = data['brightness']
 
-    #Update LED strip brightness
-    target_strip.set_brightness(brightness)
-
     #Set the LED strip to the given pattern
     target_strip.set_pattern(pattern)
+
+    #Update LED strip brightness
+    target_strip.set_brightness(brightness)
 
     # Send a response to the client
     return jsonify({'status': 'success'}), 201
@@ -131,9 +135,13 @@ def start_rainbow():
     #Read from the request payload
     color_interval = data['color_interval']
     speed = data['speed']
+    brightness = data['brightness']
 
     # Start the rainbow cycle in a new thread
     target_strip.restart_thread(target_strip.cycle_rainbow, args=(color_interval,speed))
+
+    #Update LED strip brightness
+    target_strip.set_brightness(brightness)
 
     # Send a response to the client
     return jsonify({'status': 'success'}), 201
@@ -188,11 +196,11 @@ def color_wipe():
     seamless = data['seamless']
     brightness = data['brightness']
 
-    #Update LED strip brightness
-    target_strip.set_brightness(brightness)
-
     #Start the color wipe in a new thread
     target_strip.restart_thread(target_strip.color_wipe, args=(bg_color, wipe_color, pixels, speed, seamless))
+
+    #Update LED strip brightness
+    target_strip.set_brightness(brightness)
 
     #Send a response to the client
     return jsonify({'status': 'success'}), 201
@@ -280,11 +288,11 @@ def blink():
     speed = data['speed']
     brightness = data['brightness']
 
-    #Set the brightness of the LED strip
-    target_strip.set_brightness(brightness)
-
     #Start the blink animation
     target_strip.restart_thread(target_strip.blink,args=(colors, speed))
+
+    #Set the brightness of the LED strip
+    target_strip.set_brightness(brightness)
 
     #Send a response to the client
     return jsonify({'status': 'success'}), 201
