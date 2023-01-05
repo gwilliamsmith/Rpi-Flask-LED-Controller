@@ -131,9 +131,13 @@ def start_rainbow():
     #Read from the request payload
     color_interval = data['color_interval']
     speed = data['speed']
+    brightness = data['brightness']
 
     # Start the rainbow cycle in a new thread
     target_strip.restart_thread(target_strip.cycle_rainbow, args=(color_interval,speed))
+
+    #Update LED strip brightness
+    target_strip.set_brightness(brightness)
 
     # Send a response to the client
     return jsonify({'status': 'success'}), 201
