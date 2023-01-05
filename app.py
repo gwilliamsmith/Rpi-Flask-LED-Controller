@@ -68,11 +68,15 @@ def set_color():
     #Stop any animation that's running on the strip
     target_strip.stop_thread()
     
-    #Get the color from the payload
+    #Get data from the payload
     color = data['color']
+    brightness = data['brightness']
 
     #Set the LEDStrip pixels to the given color
     target_strip.set_all_pixels(color)
+
+    #Update LED strip brightness
+    target_strip.set_brightness(brightness)
 
     # Send a response to the client
     return jsonify({'status': 'success'}), 201
