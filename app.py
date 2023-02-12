@@ -220,6 +220,8 @@ def cluster_run():
     except KeyError:
         return jsonify({'error': ('Strip ' + data['target_strip'] + " doesn't exist!")  }), 400
 
+    print("Data load")
+
     #Read from request payload
     bg_color = data['bg_color']
     cluster_color = data['cluster_color']
