@@ -40,6 +40,7 @@ class LEDStrip():
     """
     def clear(self):
         self.set_all_pixels("#000000")
+        self.strip.show()
 
     """
     Set the strip to a color, and fade it from a min_brightness to a max brightness over an interval, and then do the reverse.
