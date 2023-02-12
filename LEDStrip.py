@@ -124,13 +124,15 @@ class LEDStrip():
     def cluster_run(self, bg_color, cluster_color, cluster_size, cluster_space, interval):
         current_thread = threading.current_thread()
         
+        clusters = (self.strip.numPixels() + cluster_space) // (cluster_size + cluster_space)
+        print(clusters)
         while not current_thread.stopped():
             while not current_thread.paused():
                 print("Starting run")
                 for i in range(self.strip.numPixels()):
-                    print("\t"+ str(i))
+                    #print("\t"+ str(i))
                     for j in range(cluster_size):
-                        print("\t\t"+ str(j))
+                        #print("\t\t"+ str(j))
                         if (i+j) < self.strip.numPixels():
                             self.set_pixel_color((i+j) % self.strip.numPixels(), cluster_color)
                         else:
