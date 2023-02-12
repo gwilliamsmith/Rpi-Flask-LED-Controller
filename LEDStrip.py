@@ -130,7 +130,7 @@ class LEDStrip():
                 for i in range(self.strip.numPixels() + cluster_size):
                     self.set_all_pixels(bg_color)
                     print("\t"+ str(i))
-                    for j in range(self.strip.numPixels()):
+                    for j in range(cluster_size):
                         print("\t\t"+ str(j))
                         if (j + i) % (cluster_size + cluster_space) < cluster_size:
                             self.set_pixel_color(j, cluster_color)
