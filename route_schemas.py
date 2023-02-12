@@ -180,7 +180,6 @@ cluster_run_schema = {
         },
         'cluster_spacing':{
             'type': 'integer',
-            'minimum': 0
         },
         'cluster_color':{
             'type': 'string',
