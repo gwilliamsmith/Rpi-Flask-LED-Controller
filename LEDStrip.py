@@ -125,7 +125,14 @@ class LEDStrip():
         current_thread = threading.current_thread()
         
         clusters = (self.strip.numPixels() + cluster_space) // (cluster_size + cluster_space)
-        print(clusters)
+
+        strip_colors = [bg_color for i in range(self.strip.numPixels())]
+
+        for i in range(clusters):
+            for j in range(cluster_size):
+                strip_colors[(i*(cluster_size +cluster_space))+j] = cluster_color
+        
+        print(strip_colors)
         while not current_thread.stopped():
             while not current_thread.paused():
                 print("Starting run")
