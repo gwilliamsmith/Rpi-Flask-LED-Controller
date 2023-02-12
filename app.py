@@ -206,8 +206,9 @@ def color_wipe():
     return jsonify({'status': 'success'}), 201
 
 @app.route('/clusterrun', methods=['POST'])
-def clusterrun():
-    try:
+def cluster_run():
+    return jsonify({'status': 'success'}), 201
+    """try:
         #Validate the request payload
         data = request.json
         jsonschema.validate(data,rschema.base_schema)
@@ -237,7 +238,7 @@ def clusterrun():
 
     #Send a response to the client
     return jsonify({'status': 'success'}), 201    
-
+    """
 #Fades a color in and out on the whole strip
 @app.route('/fadecolor', methods=['POST'])
 def fade_color():
