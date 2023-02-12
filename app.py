@@ -208,29 +208,31 @@ def color_wipe():
 @app.route('/clusterrun', methods=['POST'])
 def cluster_run():
     print("payload:")
-    print(request.json)
+    print(request)
     try:
         #Validate the request payload
         data = request.json
         jsonschema.validate(data,rschema.base_schema)
         jsonschema.validate(data,rschema.cluster_run_schema)
-        jsonschema.validate(data,rschema.speed_schema)
         jsonschema.validate(data,rschema.brightness_schema)
+        jsonschema.validate(data,rschema.speed_schema)
         target_strip = get_strip(data['target_strip'])
+    #Return an error if validation fails
     except jsonschema.ValidationError as e:
         return jsonify({"error": e.message}), 400
+    #Return an error if the strip doesn't exist
     except KeyError:
         return jsonify({'error': ('Strip ' + data['target_strip'] + " doesn't exist!")  }), 400
 
     print("Data load")
 
     #Read from request payload
-    #bg_color = data['bg_color']
-    #cluster_color = data['cluster_color']
-    #cluster_spacing = data['cluster_spacing']
-    #cluster_size = data['cluster_size']
-    #brightness = data['brightness']
-    #speed = data['speed']
+    bg_color = data['bg_color']
+    cluster_color = data['cluster_color']
+    cluster_spacing = data['cluster_spacing']
+    cluster_size = data['cluster_size']
+    brightness = data['brightness']
+    speed = data['speed']
 
     print("Pre-run")
     target_strip.restart_thread(target_strip.cluster_run, args=(bg_color,cluster_color,cluster_size,cluster_spacing,speed))
