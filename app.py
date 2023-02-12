@@ -205,10 +205,46 @@ def color_wipe():
     #Send a response to the client
     return jsonify({'status': 'success'}), 201
 
+#Sends a color across the LED strip
+@app.route('/clusterrun', methods=['POST'])
+def cluster_run():
+    try:
+        #Validate the request payload
+        data = request.json
+        jsonschema.validate(data,rschema.base_schema)
+        jsonschema.validate(data,rschema.color_wipe_schema)
+        jsonschema.validate(data,rschema.speed_schema)
+        jsonschema.validate(data,rschema.brightness_schema)
+        target_strip = get_strip(data['target_strip'])
+    #Return an error if validation fails
+    except jsonschema.ValidationError as e:
+        return jsonify({"error": e.message}), 400
+    #Return an error if the strip doesn't exist
+    except KeyError:
+        return jsonify({'error': ('Strip ' + data['target_strip'] + " doesn't exist!")  }), 400
+
+    #Read from request payload
+    bg_color = data['bg_color']
+    wipe_color = data['wipe_color']
+    pixels = data['pixels']
+    speed = data['speed']
+    seamless = data['seamless']
+    brightness = data['brightness']
+
+    #Start the color wipe in a new thread
+    target_strip.restart_thread(target_strip.color_wipe, args=(bg_color, wipe_color, pixels, speed, seamless))
+
+    #Update LED strip brightness
+    target_strip.set_brightness(brightness)
+
+    #Send a response to the client
+    return jsonify({'status': 'success'}), 201
+
+"""
 @app.route('/clusterrun', methods=['POST'])
 def cluster_run():
     return jsonify({'status': 'success'}), 201
-    """try:
+    try:
         #Validate the request payload
         data = request.json
         jsonschema.validate(data,rschema.base_schema)
