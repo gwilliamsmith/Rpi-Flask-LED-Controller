@@ -207,7 +207,7 @@ def color_wipe():
 
 @app.route('/clusterrun', methods=['POST'])
 def cluster_run():
-    return jsonify({"???": "but why"}),202
+    return 202
     try:
         #Validate the request payload
         data = request.json
