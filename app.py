@@ -73,7 +73,7 @@ def set_color():
     brightness = data['brightness']
 
     #Set the LEDStrip pixels to the given color
-    target_strip.set_all_pixels(color)
+    target_strip.set_color(color)
 
     #Update LED strip brightness
     target_strip.set_brightness(brightness)

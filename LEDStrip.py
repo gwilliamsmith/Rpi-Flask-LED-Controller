@@ -30,6 +30,9 @@ class LEDStrip():
     def set_all_pixels(self, color):
         for i in range(self.num_leds):
             self.strip.setPixelColor(i, self.__translateColor(color))
+
+    def set_color(self,color):
+        self.set_all_pixels(color)
         self.strip.show()
 
     """
