@@ -230,10 +230,8 @@ def cluster_run():
     cluster_size = data['cluster_size']
     brightness = data['brightness']
     speed = data['speed']
-
-    print("Pre-run")
+    
     target_strip.restart_thread(target_strip.cluster_run, args=(bg_color,cluster_color,cluster_size,cluster_spacing,speed))
-    print("Post-run")
     target_strip.set_brightness(brightness)
 
     #Send a response to the client
