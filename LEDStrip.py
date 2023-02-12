@@ -126,16 +126,19 @@ class LEDStrip():
         while not current_thread.stopped():
             while not current_thread.paused():
                 print("Starting run")
-                self.set_all_pixels(bg_color)
                 for i in range(self.strip.numPixels() + cluster_size):
+                    self.set_all_pixels(bg_color)
                     print("\t"+ str(i))
                     for j in range(self.strip.numPixels()):
                         print("\t\t"+ str(j))
                         if (j + i) % (cluster_size + cluster_space) < cluster_size:
                             self.set_pixel_color(j, cluster_color)
+
                 self.strip.show()
+
                 if current_thread.stopped(): 
                     return
+                    
                 # Wait for the specified interval
                 time.sleep(interval / 1000.0)
 
