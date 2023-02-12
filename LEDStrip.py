@@ -2,6 +2,7 @@ import rpi_ws281x
 import threading
 import time
 from LightThread import LightThread
+from collections import deque
 
 class LEDStrip():
     def __init__(self, LED_COUNT=60, LED_PIN=18, LED_FREQ_HZ=800000, LED_DMA=10, LED_INVERT=False, LED_BRIGHTNESS=255, LED_CHANNEL=0):
@@ -136,17 +137,10 @@ class LEDStrip():
         while not current_thread.stopped():
             while not current_thread.paused():
                 print("Starting run")
-                for i in range(self.strip.numPixels()):
-                    #print("\t"+ str(i))
-                    for j in range(cluster_size):
-                        #print("\t\t"+ str(j))
-                        if (i+j) < self.strip.numPixels():
-                            self.set_pixel_color((i+j) % self.strip.numPixels(), cluster_color)
-                        else:
-                            self.set_pixel_color((i+j) % self.strip.numPixels(), bg_color)
-
+                for i in strip_colors:
+                    self.set_pixel_color(i,strip_colors)
                 self.strip.show()
-
+                strip_colors.rotate(1)
                 if current_thread.stopped(): 
                     return
                     
