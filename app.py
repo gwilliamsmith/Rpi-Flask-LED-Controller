@@ -207,8 +207,6 @@ def color_wipe():
 
 @app.route('/clusterrun', methods=['POST'])
 def cluster_run():
-    print("payload:")
-    print(request)
     try:
         #Validate the request payload
         data = request.json
@@ -224,8 +222,6 @@ def cluster_run():
     except KeyError:
         return jsonify({'error': ('Strip ' + data['target_strip'] + " doesn't exist!")  }), 400
 
-    print("Data load")
-
     #Read from request payload
     bg_color = data['bg_color']
     cluster_color = data['cluster_color']
@@ -240,7 +236,7 @@ def cluster_run():
     target_strip.set_brightness(brightness)
 
     #Send a response to the client
-    return jsonify({'status': 'success'}), 201
+    return jsonify({'status': 'success'}), 201    
 
 #Fades a color in and out on the whole strip
 @app.route('/fadecolor', methods=['POST'])
