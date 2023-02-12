@@ -223,6 +223,8 @@ def cluster_run():
     #Return an error if the strip doesn't exist
     except KeyError:
         return jsonify({'error': ('Strip ' + data['target_strip'] + " doesn't exist!")  }), 400
+    except TypeError:
+        return jsonify({'error':e.message})
 
     print("Data load")
 
