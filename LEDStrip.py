@@ -127,7 +127,7 @@ class LEDStrip():
         while not current_thread.stopped():
             while not current_thread.paused():
                 print("Starting run")
-                for i in range(self.strip.numPixels() + cluster_size):
+                for i in range(self.strip.numPixels()):
                     print("\t"+ str(i))
                     for j in range(cluster_size):
                         print("\t\t"+ str(j))
