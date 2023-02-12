@@ -228,12 +228,12 @@ def cluster_run():
     brightness = data['brightness']
     speed = data['speed']
 
-    target_strip.set_brightness(brightness)
-
     target_strip.restart_thread(target_strip.cluster_run, args=(bg_color,cluster_color,cluster_size,cluster_spacing,speed))
 
+    target_strip.set_brightness(brightness)
+
     return jsonify({'status' : 'success'}),201
-    
+
 #Fades a color in and out on the whole strip
 @app.route('/fadecolor', methods=['POST'])
 def fade_color():
