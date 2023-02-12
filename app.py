@@ -220,6 +220,19 @@ def cluster_run():
     except KeyError:
         return jsonify({'error': ('Strip ' + data['target_strip'] + " doesn't exist!")  }), 400
 
+    #Read from request payload
+    bg_color = data['bg_color']
+    cluster_color = data['cluster_color']
+    cluster_spacing = data['cluster_spacing']
+    cluster_size = data['cluster_size']
+    brightness = data['brightness']
+    speed = data['speed']
+
+    target_strip.set_brightness(brightness)
+
+    target_strip.restart_thread(target_strip.cluster_run, args=(bg_color,cluster_color,cluster_size,cluster_spacing,speed))
+
+
 #Fades a color in and out on the whole strip
 @app.route('/fadecolor', methods=['POST'])
 def fade_color():

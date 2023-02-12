@@ -79,6 +79,9 @@ class LEDStrip():
                 self.set_pixel_color(position,color)
         self.strip.show()
 
+    """
+    Run a single cluster of color across the strip against a given background color.
+    """
     def color_wipe(self, bg_color, wipe_color, pixels, interval, seamless):
         current_thread = threading.current_thread()
 
@@ -87,7 +90,6 @@ class LEDStrip():
         counter = 0
         
         # Loop indefinitely
-
         while not current_thread.stopped():
             while not current_thread.paused():
                 # Set the background color for all LEDs
@@ -109,6 +111,26 @@ class LEDStrip():
                 if current_thread.stopped(): 
                     return
 
+                # Wait for the specified interval
+                time.sleep(interval / 1000.0)
+
+    """"
+    Run multiple clusters of evenly-spcaed LEDs across the strip against a given background color.
+    """                
+    def cluster_run(self, bg_color, cluster_color, cluster_size, cluster_space, interval):
+        current_thread = threading.current_thread()
+        
+        while not current_thread.stopped():
+            while not current_thread.paused():
+                for i in range(self.strip.numPixels() + cluster_size):
+                    for j in range(self.strip.numPixels()):
+                        if (j + i) % (cluster_size + cluster_space) < cluster_size:
+                            self.strip.setPixelColor(j, cluster_color)
+                        else:
+                            self.strip.setPixelColor(j, bg_color)
+                self.strip.show()
+                if current_thread.stopped(): 
+                    return
                 # Wait for the specified interval
                 time.sleep(interval / 1000.0)
 

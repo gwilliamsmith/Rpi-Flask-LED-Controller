@@ -181,9 +181,13 @@ cluster_run_schema = {
         'cluster_spacing':{
             'type': 'integer',
             'minimum': 0
+        },
+        'cluster_color':{
+            'type': 'string',
+            'pattern': '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$'
         }
     },
-    'required':['cluster_size','cluster_spacing']
+    'required':['cluster_size','cluster_spacing','cluster_color']
 }
 
 init_schema = {
