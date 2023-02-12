@@ -171,6 +171,21 @@ color_wipe_schema = {
     'required':['bg_color', 'wipe_color', 'pixels']
 }
 
+cluster_run_schema = {
+    'type' : 'object',
+    'properties': {
+        'cluster_size':{
+            'type': 'integer',
+            'minimum': 1
+        },
+        'cluster_spacing':{
+            'type': 'integer',
+            'minimum': 0
+        }
+    },
+    'required':['cluster_size','cluster_spacing']
+}
+
 init_schema = {
     'type': 'object',
     'properties': {

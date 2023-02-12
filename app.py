@@ -205,6 +205,21 @@ def color_wipe():
     #Send a response to the client
     return jsonify({'status': 'success'}), 201
 
+@app.route('/clusterrun', methods=['POST'])
+def cluster_run():
+    try:
+        #Validate the request payload
+        data = request.json
+        jsonschema.validate(data,rschema.base_schema)
+        jsonschema.validate(data,rschema.cluster_run_schema)
+        jsonschema.validate(data,rschema.speed_schema)
+        jsonschema.validate(data,rschema.brightness_schema)
+        target_strip = get_strip(data['target_strip'])
+    except jsonschema.ValidationError as e:
+        return jsonify({"error": e.message}), 400
+    except KeyError:
+        return jsonify({'error': ('Strip ' + data['target_strip'] + " doesn't exist!")  }), 400
+
 #Fades a color in and out on the whole strip
 @app.route('/fadecolor', methods=['POST'])
 def fade_color():
