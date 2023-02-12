@@ -137,7 +137,7 @@ class LEDStrip():
         while not current_thread.stopped():
             while not current_thread.paused():
                 print("Starting run")
-                for i in strip_colors:
+                for i in len(strip_colors):
                     self.set_pixel_color(i,strip_colors)
                 self.strip.show()
                 strip_colors.rotate(1)
