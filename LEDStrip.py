@@ -140,7 +140,9 @@ class LEDStrip():
                 for i in range(len(strip_colors)):
                     self.set_pixel_color(i,strip_colors[i])
                 self.strip.show()
+                strip_colors = deque(strip_colors)
                 strip_colors.rotate(1)
+                strip_colors = list(strip_colors)
                 if current_thread.stopped(): 
                     return
                     
