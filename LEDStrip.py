@@ -2,6 +2,7 @@ import rpi_ws281x
 import threading
 import time
 from LightThread import LightThread
+from collections import deque
 
 class LEDStrip():
     def __init__(self, LED_COUNT=60, LED_PIN=18, LED_FREQ_HZ=800000, LED_DMA=10, LED_INVERT=False, LED_BRIGHTNESS=255, LED_CHANNEL=0):
@@ -30,6 +31,9 @@ class LEDStrip():
     def set_all_pixels(self, color):
         for i in range(self.num_leds):
             self.strip.setPixelColor(i, self.__translateColor(color))
+
+    def set_color(self,color):
+        self.set_all_pixels(color)
         self.strip.show()
 
     """
@@ -37,6 +41,7 @@ class LEDStrip():
     """
     def clear(self):
         self.set_all_pixels("#000000")
+        self.strip.show()
 
     """
     Set the strip to a color, and fade it from a min_brightness to a max brightness over an interval, and then do the reverse.
@@ -79,6 +84,9 @@ class LEDStrip():
                 self.set_pixel_color(position,color)
         self.strip.show()
 
+    """
+    Run a single cluster of color across the strip against a given background color.
+    """
     def color_wipe(self, bg_color, wipe_color, pixels, interval, seamless):
         current_thread = threading.current_thread()
 
@@ -87,7 +95,6 @@ class LEDStrip():
         counter = 0
         
         # Loop indefinitely
-
         while not current_thread.stopped():
             while not current_thread.paused():
                 # Set the background color for all LEDs
@@ -109,6 +116,34 @@ class LEDStrip():
                 if current_thread.stopped(): 
                     return
 
+                # Wait for the specified interval
+                time.sleep(interval / 1000.0)
+
+    """"
+    Run multiple clusters of evenly-spcaed LEDs across the strip against a given background color.
+    """                
+    def cluster_run(self, bg_color, cluster_color, cluster_size, cluster_space, interval):
+        current_thread = threading.current_thread()
+        
+        clusters = (self.strip.numPixels() + cluster_space) // (cluster_size + cluster_space)
+
+        strip_colors = [bg_color for i in range(self.strip.numPixels())]
+
+        for i in range(clusters):
+            for j in range(cluster_size):
+                strip_colors[(i*(cluster_size +cluster_space))+j] = cluster_color
+        
+        while not current_thread.stopped():
+            while not current_thread.paused():
+                for i in range(len(strip_colors)):
+                    self.set_pixel_color(i,strip_colors[i])
+                self.strip.show()
+                strip_colors = deque(strip_colors)
+                strip_colors.rotate(1)
+                strip_colors = list(strip_colors)
+                if current_thread.stopped(): 
+                    return
+                    
                 # Wait for the specified interval
                 time.sleep(interval / 1000.0)
 
@@ -135,6 +170,7 @@ class LEDStrip():
         while not current_thread.stopped():
             while not current_thread.paused():
                 self.set_all_pixels(colors[counter])
+                self.strip.show()
                 if current_thread.stopped(): return
                 counter = (counter + 1) % len(colors)
                 time.sleep(interval/1000.0) 

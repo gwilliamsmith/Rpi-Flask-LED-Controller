@@ -73,7 +73,7 @@ def set_color():
     brightness = data['brightness']
 
     #Set the LEDStrip pixels to the given color
-    target_strip.set_all_pixels(color)
+    target_strip.set_color(color)
 
     #Update LED strip brightness
     target_strip.set_brightness(brightness)
@@ -205,6 +205,37 @@ def color_wipe():
     #Send a response to the client
     return jsonify({'status': 'success'}), 201
 
+
+@app.route('/clusterrun', methods=['POST'])
+def cluster_run():
+    try:
+        #Validate the request payload
+        data = request.json
+        jsonschema.validate(data,rschema.base_schema)
+        jsonschema.validate(data,rschema.cluster_run_schema)
+        jsonschema.validate(data,rschema.brightness_schema)
+        jsonschema.validate(data,rschema.speed_schema)
+        target_strip = get_strip(data['target_strip'])
+    #Return an error if validation fails
+    except jsonschema.ValidationError as e:
+        return jsonify({"error": e.message}), 400
+    #Return an error if the strip doesn't exist
+    except KeyError:
+        return jsonify({'error': ('Strip ' + data['target_strip'] + " doesn't exist!")  }), 400
+
+    #Read from request payload
+    bg_color = data['bg_color']
+    cluster_color = data['cluster_color']
+    cluster_spacing = data['cluster_spacing']
+    cluster_size = data['cluster_size']
+    brightness = data['brightness']
+    speed = data['speed']
+    
+    target_strip.restart_thread(target_strip.cluster_run, args=(bg_color,cluster_color,cluster_size,cluster_spacing,speed))
+    target_strip.set_brightness(brightness)
+
+    #Send a response to the client
+    return jsonify({'status': 'success'}), 201    
 #Fades a color in and out on the whole strip
 @app.route('/fadecolor', methods=['POST'])
 def fade_color():
