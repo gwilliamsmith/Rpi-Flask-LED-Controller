@@ -170,6 +170,7 @@ class LEDStrip():
         while not current_thread.stopped():
             while not current_thread.paused():
                 self.set_all_pixels(colors[counter])
+                self.strip.show()
                 if current_thread.stopped(): return
                 counter = (counter + 1) % len(colors)
                 time.sleep(interval/1000.0) 
